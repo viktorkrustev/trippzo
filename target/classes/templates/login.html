@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Вход | Trippzo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex flex-col">
+
+<!-- Navbar -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<!-- Background Effects -->
+<div class="absolute inset-0 z-0 pointer-events-none">
+    <div class="absolute top-1/4 left-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+</div>
+
+<!-- Login Section -->
+<div class="relative z-10 flex justify-center items-center flex-1 px-4 py-16">
+    <div class="w-full max-w-md space-y-8" data-aos="fade-up">
+
+        <!-- Header -->
+        <div class="text-center">
+            <h2 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                Добре дошли обратно
+            </h2>
+            <p class="mt-2 text-gray-400 text-sm sm:text-base">Влезте в своя Trippzo акаунт</p>
+        </div>
+
+        <!-- Form Container -->
+        <div class="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 sm:p-8 shadow-xl">
+            <!-- Login Error -->
+            <div th:if="${error}" class="text-red-400 text-sm mb-4">
+                <p th:text="${error}"></p>
+            </div>
+
+            <form th:action="@{/login}" method="post" class="space-y-4 sm:space-y-6">
+                <div>
+                    <label for="username" class="block text-sm sm:text-base font-medium text-gray-300 mb-1">Потребителско име</label>
+                    <input id="username" name="username" type="text" required
+                           class="w-full px-4 py-3 sm:py-4 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                           placeholder="Въведете потребителско име" />
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm sm:text-base font-medium text-gray-300 mb-1">Парола</label>
+                    <input id="password" name="password" type="password" required
+                           class="w-full px-4 py-3 sm:py-4 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                           placeholder="Въведете парола" />
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                    <label class="flex items-center text-sm sm:text-base text-gray-300 mb-2 sm:mb-0">
+                        <input id="remember-me" name="remember-me" type="checkbox"
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded bg-gray-900" />
+                        <span class="ml-2">Запомни ме</span>
+                    </label>
+
+                    <div class="text-sm sm:text-base">
+                        <a href="#" class="text-blue-400 hover:text-blue-300 transition-colors">Забравена парола?</a>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full py-3 sm:py-4 px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition-all duration-200 shadow-lg hover:shadow-xl">
+                    Вход
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-sm sm:text-base">
+                <p class="text-gray-400">
+                    Нямате акаунт?
+                    <a th:href="@{/register}" class="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+                        Регистрирайте се
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AOS JS -->
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({
+      duration: 600,
+      easing: 'ease-out',
+      once: true
+    });
+</script>
+
+</body>
+</html>

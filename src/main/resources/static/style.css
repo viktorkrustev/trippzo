@@ -1,0 +1,29 @@
+/* Примерна анимация при зареждане */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 1s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Примерна hover анимация за бутони */
+button:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}
+
+/* Плавно преминаване при hover */
+a {
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+a:hover {
+    color: #0c7ff2;
+    transform: translateY(-2px);
+}

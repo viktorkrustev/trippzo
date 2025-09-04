@@ -1,0 +1,21 @@
+<!-- fragments/layout.html -->
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title th:replace="${title}">Trippzo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+
+<!-- 🔝 Навигация -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<!-- 🧱 Main Content (пълни се динамично) -->
+<main class="relative z-10" th:fragment="layout(content)">
+  <div th:insert="${content}"></div>
+</main>
+
+</body>
+</html>

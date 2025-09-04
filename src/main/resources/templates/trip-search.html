@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Търсене на пътувания</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white font-sans">
+
+<!-- Навигация -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="min-h-screen px-4 py-10">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Заглавие -->
+        <h1 class="text-3xl md:text-5xl font-extrabold mb-10 text-center md:text-left bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            Търсене на пътувания
+        </h1>
+
+        <!-- Search Form -->
+        <form method="get" action="/trips/search" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+            <!-- From -->
+            <div class="relative">
+                <input type="text" name="from" placeholder="Начална точка"
+                       class="w-full bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200" />
+                <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-xl">📍</span>
+            </div>
+
+            <!-- To -->
+            <div class="relative">
+                <input type="text" name="to" placeholder="Крайна точка"
+                       class="w-full bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-200" />
+                <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-xl">🎯</span>
+            </div>
+
+            <!-- Date -->
+            <div class="relative">
+                <input type="date" name="date"
+                       class="w-full h-12 bg-gray-800 text-white border border-gray-700 rounded-xl px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200" />
+                <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-xl pointer-events-none">📅</span>
+            </div>
+
+            <!-- Search Button -->
+            <button type="submit"
+                    class="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white font-bold py-3 rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-2">
+                <span class="text-xl">🔍</span>
+                <span>Търси</span>
+            </button>
+        </form>
+
+        <!-- Няма резултати -->
+        <div th:if="${#lists.isEmpty(trips)}" class="text-center text-gray-400 mt-10 text-lg">
+            Няма намерени пътувания.
+        </div>
+
+        <!-- Списък с пътувания -->
+        <div th:if="${not #lists.isEmpty(trips)}" class="space-y-6">
+            <div th:each="trip : ${trips}"
+                 class="bg-gray-900 border border-gray-700 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition duration-300 flex flex-col md:flex-row justify-between gap-4">
+
+                <!-- Основна информация -->
+                <div class="flex-1 space-y-3">
+                    <div class="flex flex-col md:flex-row md:items-center md:space-x-6 text-white">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl">📍</span>
+                            <p class="font-semibold text-lg" th:text="${trip.origin}">От</p>
+                        </div>
+                        <span class="mx-2 text-gray-400 hidden md:block">→</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl">🎯</span>
+                            <p class="font-semibold text-lg" th:text="${trip.destination}">До</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-300 mt-3">
+                        <div class="flex flex-col">
+                            <p class="text-gray-400">Дата и час</p>
+                            <p class="font-medium text-white" th:text="${#temporals.format(trip.departureDateTime, 'yyyy-MM-dd в HH:mm')}">2025-08-01 в 12:00</p>
+                        </div>
+                        <div class="flex flex-col">
+                            <p class="text-gray-400">Шофьор</p>
+                            <p class="font-medium text-white" th:text="${trip.driver != null ? trip.driver.fullName : 'Неизвестен'}">Иван Иванов</p>
+                        </div>
+                        <div class="flex flex-col">
+                            <p class="text-gray-400">Свободни места</p>
+                            <p class="font-medium text-white" th:text="|${trip.seatsTotal} места|">3 места</p>
+                        </div>
+                        <div class="flex flex-col md:items-end">
+                            <a th:href="@{'/trips/' + ${trip.id}}"
+                               class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-md transition duration-200 text-center">
+                                Виж подробности
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Моят профил | Trippzo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex flex-col">
+
+<!-- Navbar -->
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<!-- Container -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 flex-1">
+
+  <!-- Header -->
+  <div class="text-center mb-12">
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+      Моят профил
+    </h1>
+    <p class="text-gray-400 text-sm sm:text-lg">Управлявайте своя акаунт и пътувания</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Profile Info -->
+    <div class="lg:col-span-1">
+      <div class="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 flex flex-col items-center">
+
+        <!-- Avatar -->
+        <div class="w-24 h-24 rounded-full overflow-hidden mb-4 border-2 border-gray-700 flex items-center justify-center text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+          <img th:if="${user.avatarUrl != null}" th:src="@{${user.avatarUrl}}" alt="Аватар" class="w-full h-full object-cover"/>
+          <span th:if="${user.avatarUrl == null}" th:text="${user.fullName.substring(0,1)}"></span>
+        </div>
+
+        <!-- Name & Email -->
+        <h2 class="text-xl font-semibold text-white" th:text="${user.fullName}"></h2>
+        <p class="text-gray-400 text-sm" th:text="${user.email}"></p>
+
+        <!-- Upload Avatar -->
+        <form th:action="@{/profile/upload-avatar}" method="post" enctype="multipart/form-data" class="mt-4 w-full flex flex-col items-center">
+          <input type="file" name="avatar" accept="image/*" class="mb-2 w-full sm:w-auto"/>
+          <button type="submit" class="w-full sm:w-auto py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm">
+            📤 Качи нова снимка
+          </button>
+        </form>
+
+        <!-- Edit Profile Toggle -->
+        <button onclick="document.getElementById('editProfileForm').classList.toggle('hidden')"
+                class="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 mt-4">
+          ✏️ Редактирай профила
+        </button>
+
+        <!-- Edit Form -->
+        <div id="editProfileForm" class="hidden mt-4 w-full">
+          <form th:action="@{/profile/edit}" method="post" class="space-y-2">
+            <input type="text" name="fullName" th:value="${user.fullName}" class="w-full p-2 rounded bg-gray-700 text-white"/>
+            <input type="email" name="email" th:value="${user.email}" class="w-full p-2 rounded bg-gray-700 text-white"/>
+            <button type="submit" class="w-full py-2 px-4 bg-green-500 rounded-lg hover:bg-green-600 transition-all duration-200 text-white">
+              💾 Запази
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Trips History -->
+    <div class="lg:col-span-2 flex flex-col gap-6">
+
+      <div class="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6">
+
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
+          <h3 class="text-2xl font-semibold text-white">Моите пътувания</h3>
+          <a href="/trips/create"
+             class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm">
+            ➕ Ново пътуване
+          </a>
+        </div>
+
+        <!-- Trips List -->
+        <div class="space-y-4">
+          <!-- Trips като шофьор -->
+          <div th:each="trip : ${driverTrips}" class="bg-gray-900/30 border border-gray-700/30 rounded-xl p-4 hover:bg-gray-900/50 transition-all duration-300">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-2">
+                  <span>🚗</span>
+                  <span class="text-sm text-gray-400">Шофьор</span>
+                  <div class="px-2 py-1 rounded-full text-xs text-green-400 bg-green-400/10">Активно</div>
+                </div>
+                <div class="flex items-center space-x-2 mb-2 text-white font-medium">
+                  <span th:text="${trip.origin}"></span>
+                  <span class="text-gray-500">→</span>
+                  <span th:text="${trip.destination}"></span>
+                </div>
+                <div class="text-sm text-gray-400">
+                  <span th:text="'👥 ' + ${trip.passengers.size()} + ' пътници'"></span>
+                </div>
+              </div>
+              <div class="flex flex-col sm:items-end gap-2">
+                <a th:href="@{'/trips/' + ${trip.id}}" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                  Виж детайли
+                </a>
+                <form th:action="@{'/trips/' + ${trip.id} + '/delete'}" method="post" th:object="${trip}" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете това пътуване?');">
+                  <input type="hidden" name="_method" value="delete">
+                  <button type="submit" class="text-sm text-red-500 hover:text-red-400 transition-colors">
+                    🗑️ Изтрий
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Trips като пътник -->
+          <div th:each="trip : ${passengerTrips}" class="bg-gray-900/30 border border-gray-700/30 rounded-xl p-4 hover:bg-gray-900/50 transition-all duration-300">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-2">
+                  <span>🎫</span>
+                  <span class="text-sm text-gray-400">Пътник</span>
+                  <div class="px-2 py-1 rounded-full text-xs text-blue-400 bg-blue-400/10">Завършено</div>
+                </div>
+                <div class="flex items-center space-x-2 mb-2 text-white font-medium">
+                  <span th:text="${trip.origin}"></span>
+                  <span class="text-gray-500">→</span>
+                  <span th:text="${trip.destination}"></span>
+                </div>
+                <div class="text-sm text-gray-400">
+                  <span th:text="'👥 ' + ${trip.passengers.size()} + ' пътници'"></span>
+                </div>
+              </div>
+              <div class="text-right">
+                <a th:href="@{'/trips/' + ${trip.id}}" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                  Виж детайли
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

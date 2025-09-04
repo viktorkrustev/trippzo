@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<body>
+<div th:fragment="navbar">
+  <nav class="bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+
+        <!-- Logo -->
+        <a href="/" class="flex items-center space-x-2">
+          <div class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            🚗 Trippzo
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <div class="hidden md:flex items-center space-x-1">
+          <a href="/" class="px-4 py-2 text-gray-300 hover:text-white transition-colors">🏠 Начало</a>
+          <a href="/trips/search" class="px-4 py-2 text-gray-300 hover:text-white transition-colors">🔍 Търси пътуване</a>
+          <a href="/trips/create" class="px-4 py-2 text-gray-300 hover:text-white transition-colors">➕ Създай пътуване</a>
+          <a href="/profile" class="px-4 py-2 text-gray-300 hover:text-white transition-colors">👤 Профил</a>
+          <a href="/chat" class="px-4 py-2 text-gray-300 hover:text-white transition-colors">💬 Съобщения</a>
+        </div>
+
+        <!-- Auth Buttons Desktop -->
+        <div class="hidden md:flex items-center space-x-3">
+          <div sec:authorize="!isAuthenticated()">
+            <a href="/login" class="px-4 py-2 text-gray-300 hover:text-white transition-colors">Вход</a>
+            <a href="/register" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">Регистрация</a>
+          </div>
+          <div sec:authorize="isAuthenticated()">
+            <form th:action="@{/logout}" method="post">
+              <button type="submit" class="px-4 py-2 text-gray-300 hover:text-white transition-colors">Изход</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Mobile button -->
+        <div class="md:hidden">
+          <button id="mobile-menu-button" class="text-gray-300 hover:text-white focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-gray-900/30 backdrop-blur-lg border border-gray-700 rounded-xl m-4 shadow-lg">
+      <div class="flex flex-col items-center py-4 space-y-4">
+
+        <a href="/" class="w-full text-center px-4 py-2 rounded-lg text-gray-200 hover:text-white hover:bg-gray-800/50 transition-all duration-200">
+          🏠 Начало
+        </a>
+        <a href="/trips/search" class="w-full text-center px-4 py-2 rounded-lg text-gray-200 hover:text-white hover:bg-gray-800/50 transition-all duration-200">
+          🔍 Търси пътуване
+        </a>
+        <a href="/trips/create" class="w-full text-center px-4 py-2 rounded-lg text-gray-200 hover:text-white hover:bg-gray-800/50 transition-all duration-200">
+          ➕ Създай пътуване
+        </a>
+        <a href="/profile" class="w-full text-center px-4 py-2 rounded-lg text-gray-200 hover:text-white hover:bg-gray-800/50 transition-all duration-200">
+          👤 Профил
+        </a>
+        <a href="/chat" class="w-full text-center px-4 py-2 rounded-lg text-gray-200 hover:text-white hover:bg-gray-800/50 transition-all duration-200">
+          💬 Съобщения
+        </a>
+
+        <div class="border-t border-gray-700 w-full"></div>
+
+        <div class="flex flex-col items-center w-full space-y-3 mt-3">
+          <div sec:authorize="!isAuthenticated()" class="flex flex-col w-full space-y-2">
+            <a href="/login" class="w-full text-center px-4 py-2 rounded-lg text-gray-200 hover:text-white hover:bg-gray-800/50 transition-all duration-200">Вход</a>
+            <a href="/register" class="w-full text-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg">
+              Регистрация
+            </a>
+          </div>
+          <div sec:authorize="isAuthenticated()" class="w-full">
+            <form th:action="@{/logout}" method="post">
+              <button type="submit" class="w-full text-center px-4 py-2 rounded-lg text-gray-200 hover:text-white hover:bg-gray-800/50 transition-all duration-200">Изход</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </nav>
+
+  <!-- Скрипт за мобилното меню -->
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener("DOMContentLoaded", function() {
+      const button = document.getElementById('mobile-menu-button');
+      const menu = document.getElementById('mobile-menu');
+      if (button && menu) {
+        button.addEventListener('click', () => {
+          menu.classList.toggle('hidden');
+        });
+      }
+    });
+    /*]]>*/
+  </script>
+</div>
+</body>
+</html>

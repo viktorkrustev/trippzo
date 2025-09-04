@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Детайли за пътуване</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+</head>
+
+<body class="bg-[#0a0a0f] text-white min-h-screen">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="max-w-6xl mx-auto px-4 mt-10">
+  <div class="grid lg:grid-cols-3 gap-8" th:object="${trip}">
+    <!-- Основна информация -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-[#12121a] rounded-2xl p-6 shadow-lg">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            <span th:text="*{origin}"></span> → <span th:text="*{destination}"></span>
+          </h1>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+          <div class="space-y-4">
+            <div class="flex items-center space-x-3">
+              <span class="text-2xl">📅</span>
+              <div>
+                <p class="text-gray-400 text-sm">Дата и час</p>
+                <p class="text-white font-medium" th:text="${#temporals.format(trip.departureDateTime, 'dd.MM.yyyy HH:mm')}"></p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-3">
+              <span class="text-2xl">🚗</span>
+              <div>
+                <p class="text-gray-400 text-sm">Автомобил</p>
+                <p class="text-white font-medium" th:text="*{car}"></p>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="flex items-center space-x-3">
+              <span class="text-2xl">👤</span>
+              <div>
+                <p class="text-gray-400 text-sm">Шофьор</p>
+                <div class="flex items-center space-x-2">
+                  <p class="text-white font-medium" th:text="*{driver.fullName}"></p>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-3">
+              <span class="text-2xl">🪑</span>
+              <div>
+                <p class="text-gray-400 text-sm">Свободни места</p>
+                <p class="text-white font-medium" th:text="${seatsAvailable} + ' налични'"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-700 pt-4">
+          <p class="text-gray-400 text-sm mb-2">Описание</p>
+          <p class="text-white" th:text="*{description}"></p>
+        </div>
+      </div>
+
+      <!-- Карта -->
+      <div class="bg-[#12121a] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-xl font-semibold mb-4 text-white">Маршрут</h3>
+        <div id="map" class="rounded-lg h-64 border border-gray-600"></div>
+      </div>
+    </div>
+
+    <!-- Странична колона -->
+    <div class="space-y-6">
+      <div class="bg-[#12121a] rounded-2xl p-6 shadow-lg space-y-4">
+        <form th:action="@{'/trips/' + ${trip.id} + '/book'}" method="post" th:if="${seatsAvailable > 0}">
+          <button type="submit"
+                  class="w-full py-4 px-6 bg-gradient-to-r from-green-500 to-blue-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl text-lg">
+            🎫 Заяви място
+          </button>
+        </form>
+        <p class="text-center text-gray-400 text-sm" th:if="${seatsAvailable > 0}">
+          Потвърждение ще получите в чата
+        </p>
+        <p class="text-center text-red-500 text-sm" th:if="${seatsAvailable == 0}">
+          Няма свободни места
+        </p>
+
+        <a th:href="@{'/chat/' + ${trip.driver.username}}"
+           class="block py-3 px-6 text-center bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 shadow-md">
+          💬 Пиши на шофьора
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  document.addEventListener("DOMContentLoaded", function () {
+      const map = L.map('map').setView([42.6977, 23.3219], 7);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Вземаме координатите директно от Trip обекта
+      const originLat = /*[[${trip.originLat}]]*/ null;
+      const originLng = /*[[${trip.originLng}]]*/ null;
+      const destinationLat = /*[[${trip.destinationLat}]]*/ null;
+      const destinationLng = /*[[${trip.destinationLng}]]*/ null;
+      const originName = '/*[[${trip.origin}]]*/';
+      const destinationName = '/*[[${trip.destination}]]*/';
+
+      if (originLat && originLng && destinationLat && destinationLng) {
+          const originPoint = [originLat, originLng];
+          const destinationPoint = [destinationLat, destinationLng];
+
+          // Добавяме маршрута чрез OSRM Routing без контролното меню
+          L.Routing.control({
+              router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+              waypoints: [originPoint, destinationPoint],
+              createMarker: (i, wp) => L.marker(wp.latLng).bindPopup(i === 0 ? originName : destinationName),
+              addWaypoints: false,
+              routeWhileDragging: false,
+              show: false // премахва контролния панел/бялото квадратче
+          }).addTo(map);
+      } else {
+          console.error('Липсват координати за маршрута.');
+      }
+  });
+  /*]]>*/
+</script>
+
+</body>
+</html>
