@@ -5,10 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Детайли за пътуване</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
-  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 </head>
 
 <body class="bg-[#0a0a0f] text-white min-h-screen">
@@ -67,12 +63,6 @@
           <p class="text-white" th:text="*{description}"></p>
         </div>
       </div>
-
-      <!-- Карта -->
-      <div class="bg-[#12121a] rounded-2xl p-6 shadow-lg">
-        <h3 class="text-xl font-semibold mb-4 text-white">Маршрут</h3>
-        <div id="map" class="rounded-lg h-64 border border-gray-600"></div>
-      </div>
     </div>
 
     <!-- Странична колона -->
@@ -99,43 +89,6 @@
     </div>
   </div>
 </div>
-
-<script th:inline="javascript">
-  /*<![CDATA[*/
-  document.addEventListener("DOMContentLoaded", function () {
-      const map = L.map('map').setView([42.6977, 23.3219], 7);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-
-      // Вземаме координатите директно от Trip обекта
-      const originLat = /*[[${trip.originLat}]]*/ null;
-      const originLng = /*[[${trip.originLng}]]*/ null;
-      const destinationLat = /*[[${trip.destinationLat}]]*/ null;
-      const destinationLng = /*[[${trip.destinationLng}]]*/ null;
-      const originName = '/*[[${trip.origin}]]*/';
-      const destinationName = '/*[[${trip.destination}]]*/';
-
-      if (originLat && originLng && destinationLat && destinationLng) {
-          const originPoint = [originLat, originLng];
-          const destinationPoint = [destinationLat, destinationLng];
-
-          // Добавяме маршрута чрез OSRM Routing без контролното меню
-          L.Routing.control({
-              router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
-              waypoints: [originPoint, destinationPoint],
-              createMarker: (i, wp) => L.marker(wp.latLng).bindPopup(i === 0 ? originName : destinationName),
-              addWaypoints: false,
-              routeWhileDragging: false,
-              show: false // премахва контролния панел/бялото квадратче
-          }).addTo(map);
-      } else {
-          console.error('Липсват координати за маршрута.');
-      }
-  });
-  /*]]>*/
-</script>
 
 </body>
 </html>

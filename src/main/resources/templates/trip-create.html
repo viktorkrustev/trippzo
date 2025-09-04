@@ -5,31 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Създаване на пътуване - Trippzo</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-  <style>
-    #map { height: 400px; border-radius: 1rem; }
-    .autocomplete-list {
-      position: absolute;
-      z-index: 1000;
-      background-color: rgba(30,30,30,0.95);
-      width: 100%;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #555;
-      border-radius: 0.5rem;
-    }
-    .autocomplete-item {
-      padding: 10px;
-      cursor: pointer;
-    }
-    .autocomplete-item:hover {
-      background-color: #444;
-    }
-  </style>
 </head>
 <body class="bg-black text-white min-h-screen flex flex-col relative">
 
@@ -45,27 +21,18 @@
 
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-    <input type="hidden" id="originLat" name="originLat" />
-    <input type="hidden" id="originLng" name="originLng" />
-    <input type="hidden" id="destinationLat" name="destinationLat" />
-    <input type="hidden" id="destinationLng" name="destinationLng" />
-
     <div class="grid md:grid-cols-1 gap-6 relative">
       <div class="relative">
         <label class="block text-sm font-medium mb-2">Начална точка *</label>
         <input type="text" id="originInput" name="origin" placeholder="Начална точка"
                class="w-full px-6 py-4 bg-gray-900/50 border border-gray-600 rounded-2xl text-white mb-2" required />
-        <div id="originList" class="autocomplete-list hidden"></div>
       </div>
       <div class="relative">
         <label class="block text-sm font-medium mb-2">Крайна точка *</label>
         <input type="text" id="destinationInput" name="destination" placeholder="Крайна точка"
                class="w-full px-6 py-4 bg-gray-900/50 border border-gray-600 rounded-2xl text-white mb-2" required />
-        <div id="destinationList" class="autocomplete-list hidden"></div>
       </div>
     </div>
-
-    <div id="map"></div>
 
     <div class="grid md:grid-cols-2 gap-6">
       <div>
@@ -122,125 +89,6 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
   flatpickr("#departureDate", { dateFormat: "d-m-Y", minDate: "today" });
-
-  const map = L.map('map').setView([42.6977, 23.3219], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
-
-  let originMarker = null, destinationMarker = null, routingControl = null;
-
-  async function fetchSuggestions(query) {
-    if (!query) return [];
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&q=${encodeURIComponent(query)}&accept-language=bg`);
-    return await res.json();
-  }
-
-  async function reverseGeocode(lat, lng) {
-    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=bg`);
-    const data = await res.json();
-    return data.display_name;
-  }
-
-  function setupAutocomplete(input, listId, markerLabel) {
-    const list = document.getElementById(listId);
-    input.addEventListener('input', async () => {
-      const data = await fetchSuggestions(input.value);
-      list.innerHTML = '';
-      if (!data.length) { list.classList.add('hidden'); return; }
-
-      data.forEach(place => {
-        const city = place.address.city || place.address.town || place.address.village || place.display_name;
-        const item = document.createElement('div');
-        item.className = 'autocomplete-item';
-        item.textContent = city;
-        item.addEventListener('click', () => {
-          input.value = city;
-          const latlng = [parseFloat(place.lat), parseFloat(place.lon)];
-          placeMarker(markerLabel, latlng, city);
-          list.classList.add('hidden');
-        });
-        list.appendChild(item);
-      });
-      list.classList.remove('hidden');
-    });
-
-    document.addEventListener('click', e => {
-      if (!input.contains(e.target) && !list.contains(e.target)) list.classList.add('hidden');
-    });
-  }
-
-  function placeMarker(markerLabel, latlng, name) {
-    if (markerLabel === 'A') {
-      if (originMarker) map.removeLayer(originMarker);
-      originMarker = L.marker(latlng, { draggable: true }).addTo(map).bindPopup(name).openPopup();
-      document.getElementById('originInput').value = name;
-      document.getElementById('originLat').value = latlng[0];
-      document.getElementById('originLng').value = latlng[1];
-
-      originMarker.on('dragend', async e => {
-        const pos = e.target.getLatLng();
-        document.getElementById('originLat').value = pos.lat;
-        document.getElementById('originLng').value = pos.lng;
-        const addr = await reverseGeocode(pos.lat, pos.lng);
-        document.getElementById('originInput').value = addr;
-        updateRoute();
-      });
-
-    } else {
-      if (destinationMarker) map.removeLayer(destinationMarker);
-      destinationMarker = L.marker(latlng, { draggable: true }).addTo(map).bindPopup(name).openPopup();
-      document.getElementById('destinationInput').value = name;
-      document.getElementById('destinationLat').value = latlng[0];
-      document.getElementById('destinationLng').value = latlng[1];
-
-      destinationMarker.on('dragend', async e => {
-        const pos = e.target.getLatLng();
-        document.getElementById('destinationLat').value = pos.lat;
-        document.getElementById('destinationLng').value = pos.lng;
-        const addr = await reverseGeocode(pos.lat, pos.lng);
-        document.getElementById('destinationInput').value = addr;
-        updateRoute();
-      });
-    }
-    updateRoute();
-  }
-
-  function updateRoute() {
-    if (originMarker && destinationMarker) {
-      if (routingControl) map.removeControl(routingControl);
-      routingControl = L.Routing.control({
-        waypoints: [originMarker.getLatLng(), destinationMarker.getLatLng()],
-        router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
-        show: false,
-        addWaypoints: false,
-        routeWhileDragging: true,
-        fitSelectedRoutes: true
-      }).addTo(map);
-    }
-  }
-
-  map.on('click', async function(e) {
-    const latlng = e.latlng;
-    const addr = await reverseGeocode(latlng.lat, latlng.lng);
-
-    if (!originMarker) {
-      placeMarker('A', [latlng.lat, latlng.lng], addr);
-    } else if (!destinationMarker) {
-      placeMarker('B', [latlng.lat, latlng.lng], addr);
-    } else {
-      const dOrigin = latlng.distanceTo(originMarker.getLatLng());
-      const dDest = latlng.distanceTo(destinationMarker.getLatLng());
-      if (dOrigin < dDest) {
-        placeMarker('A', [latlng.lat, latlng.lng], addr);
-      } else {
-        placeMarker('B', [latlng.lat, latlng.lng], addr);
-      }
-    }
-  });
-
-  setupAutocomplete(document.getElementById('originInput'), 'originList', 'A');
-  setupAutocomplete(document.getElementById('destinationInput'), 'destinationList', 'B');
 </script>
 
 </body>

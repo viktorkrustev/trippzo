@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Търсене на пътувания</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body class="bg-gray-950 text-white font-sans">
 
@@ -37,9 +38,9 @@
 
             <!-- Date -->
             <div class="relative">
-                <input type="date" name="date"
+                <input type="text" name="date" placeholder="Изберете дата"
                        class="w-full h-12 bg-gray-800 text-white border border-gray-700 rounded-xl px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200" />
-                <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-xl pointer-events-none">📅</span>
+                <span class="absolute inset-y-0 right-3 flex items-center text-white text-xl pointer-events-none">📅</span>
             </div>
 
             <!-- Search Button -->
@@ -100,6 +101,16 @@
 
     </div>
 </main>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    // Инициализация на Flatpickr за интерактивен календар
+    flatpickr("input[name='date']", {
+      dateFormat: "Y-m-d",
+      minDate: "today",
+      allowInput: true
+    });
+</script>
 
 </body>
 </html>
