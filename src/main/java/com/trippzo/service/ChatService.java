@@ -27,12 +27,10 @@ public class ChatService {
     @Autowired
     private UserRepository userRepository;
 
-    // Връща всички съобщения за дадено пътуване, сортирани по време
     public List<Message> getMessagesForTrip(Long tripId) {
         return messageRepository.findByTripIdOrderByTimestampAsc(tripId);
     }
 
-    // Записва ново съобщение (за пътуване или директно)
     public Message saveMessage(Long tripId, String senderUsername, String content, String receiverUsername) {
         Trip trip = null;
         if (tripId != null) {
@@ -55,12 +53,11 @@ public class ChatService {
         msg.setReceiver(receiver);
         msg.setMessageText(content);
         msg.setTimestamp(java.time.LocalDateTime.now());
-        msg.setRead(false);  // маркираме новото съобщение като непрочетено
+        msg.setRead(false);
 
         return messageRepository.save(msg);
     }
 
-    // Намира всички чат партньори на потребител (като изпращач и получател)
     public Set<User> findChatPartners(String username) {
         Set<User> partners = new HashSet<>();
         partners.addAll(messageRepository.findReceiversBySender(username));
@@ -68,30 +65,28 @@ public class ChatService {
         return partners;
     }
 
-    // Връща списък със съобщения между два потребителя (цял чат)
     public List<Message> getChatBetween(String userA, String userB) {
         return messageRepository.findChatBetweenUsers(userA, userB);
     }
 
-    // Брои непрочетените съобщения от партньор към текущия потребител
     public int countUnreadMessages(String currentUsername, String partnerUsername) {
-        return messageRepository.countBySenderUsernameAndReceiverUsernameAndReadFalse(
-                partnerUsername, currentUsername);
+        return messageRepository.countBySenderUsernameAndReceiverUsernameAndReadFalse(partnerUsername, currentUsername);
     }
 
-    // Връща време на последното съобщение между двама потребители, форматирано като "HH:mm"
+    public int countAllUnreadMessages(String currentUsername) {
+        return messageRepository.countByReceiverUsernameAndReadFalse(currentUsername);
+    }
+
     public String getLastMessageTime(String userA, String userB) {
         List<Message> messages = getChatBetween(userA, userB);
         if (messages.isEmpty()) {
             return "";
         }
-        // Взимаме последното съобщение
         Message last = messages.get(messages.size() - 1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         return last.getTimestamp().format(formatter);
     }
 
-    // Връща текста на последното съобщение между двама потребители
     public String getLastMessageContent(String userA, String userB) {
         List<Message> messages = getChatBetween(userA, userB);
         if (messages.isEmpty()) {
@@ -100,11 +95,9 @@ public class ChatService {
         return messages.get(messages.size() - 1).getMessageText();
     }
 
-
-
     public void markMessagesAsRead(String senderUsername, String receiverUsername) {
-        List<Message> unreadMessages = messageRepository.findBySenderUsernameAndReceiverUsernameAndReadFalse(
-                senderUsername, receiverUsername);
+        List<Message> unreadMessages = messageRepository
+                .findBySenderUsernameAndReceiverUsernameAndReadFalse(senderUsername, receiverUsername);
 
         for (Message msg : unreadMessages) {
             msg.setRead(true);

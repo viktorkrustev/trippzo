@@ -9,9 +9,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Когато браузърът поиска /uploads/avatars/...
-        // Spring ще върне файла от физическата папка на диска
-        registry.addResourceHandler("/uploads/avatars/**")
-                .addResourceLocations("file:///D:/trippzo/uploads/avatars/");
+        registry.addResourceHandler("/uploads/avatars/**").addResourceLocations("file:///D:/trippzo/uploads/avatars/");
     }
 }

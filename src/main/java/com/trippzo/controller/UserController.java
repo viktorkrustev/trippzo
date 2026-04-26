@@ -37,7 +37,7 @@ public class UserController {
         if (error != null) {
             model.addAttribute("error", "Невалидно потребителско име или парола.");
         }
-        return "/login"; // => resources/templates/users/login.html
+        return "/login";
     }
 
 }

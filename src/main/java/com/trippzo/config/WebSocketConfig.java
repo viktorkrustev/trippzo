@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.socket.config.annotation.*;
 
 @Configuration
@@ -14,7 +16,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-chat").withSockJS();
+        registry.addEndpoint("/ws-chat").addInterceptors(new UserHandshakeInterceptor()).withSockJS();
     }
 
     @Override

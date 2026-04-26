@@ -46,9 +46,8 @@ public class ProfileController {
     }
 
     @PostMapping("/edit")
-    public String editProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
-                              @RequestParam String fullName,
-                              @RequestParam String email) {
+    public String editProfile(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String fullName,
+            @RequestParam String email) {
         User user = userDetails.getUser();
         user.setFullName(fullName);
         user.setEmail(email);
@@ -56,33 +55,25 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
-
     @PostMapping("/upload-avatar")
     public String uploadAvatar(@RequestParam("avatar") MultipartFile file,
-                               @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
+            @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
         User user = userDetails.getUser();
 
-        // Създава папката, ако не съществува
         File dir = new File(UPLOAD_DIR);
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        // Име на файла: userId_originalFileName
         String fileName = user.getId() + "_" + file.getOriginalFilename();
         File dest = new File(UPLOAD_DIR + fileName);
 
-        // Записва файла
         file.transferTo(dest);
 
-        // Запазва пътя към аватара в базата данни (за Thymeleaf ще ползваме относителен URL)
         user.setAvatarUrl("/uploads/avatars/" + fileName);
         userService.saveUser(user);
 
         return "redirect:/profile";
     }
-
-
-
 
 }

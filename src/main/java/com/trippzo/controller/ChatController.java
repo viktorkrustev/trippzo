@@ -27,32 +27,27 @@ public class ChatController {
         this.userService = userService;
     }
 
-    // Показва списъка с чат партньори (входящата кутия)
     @GetMapping
     public String showInbox(Model model, Principal principal) {
         String currentUsername = principal.getName();
 
-        // Намираме всички потребители, с които текущият има чатове
         Set<User> chatPartners = chatService.findChatPartners(currentUsername);
 
-        // Преобразуваме в DTO, които съдържат User + брой непрочетени съобщения и допълнителна информация
-        List<ChatPartnerDTO> partnerDtos = chatPartners.stream()
-                .map(partner -> {
-                    int unreadCount = chatService.countUnreadMessages(currentUsername, partner.getUsername());
+        List<ChatPartnerDTO> partnerDtos = chatPartners.stream().map(partner -> {
+            int unreadCount = chatService.countUnreadMessages(currentUsername, partner.getUsername());
 
-                    // Пример: форматиране на последно време и последно съобщение, ако искаш може да добавиш в ChatService метод
-                    String lastMessageTime = chatService.getLastMessageTime(currentUsername, partner.getUsername());
-                    String lastMessage = chatService.getLastMessageContent(currentUsername, partner.getUsername());
+            // Пример: форматиране на последно време и последно съобщение, ако искаш може да добавиш в ChatService метод
+            String lastMessageTime = chatService.getLastMessageTime(currentUsername, partner.getUsername());
+            String lastMessage = chatService.getLastMessageContent(currentUsername, partner.getUsername());
 
-                    ChatPartnerDTO dto = new ChatPartnerDTO(partner, unreadCount);
-                    dto.setLastMessageTime(lastMessageTime);
-                    dto.setLastMessage(lastMessage);
+            ChatPartnerDTO dto = new ChatPartnerDTO(partner, unreadCount);
+            dto.setLastMessageTime(lastMessageTime);
+            dto.setLastMessage(lastMessage);
 
-                    dto.setAvatarUrl(partner.getAvatarUrl());
+            dto.setAvatarUrl(partner.getAvatarUrl());
 
-                    return dto;
-                })
-                .toList();
+            return dto;
+        }).toList();
 
         model.addAttribute("chatPartners", partnerDtos);
         return "chat-inbox";
@@ -62,10 +57,8 @@ public class ChatController {
     public String showChat(@PathVariable String username, Model model, Principal principal) {
         String currentUsername = principal.getName();
 
-        // Маркирай като прочетени (съобщения от партньора към текущия потребител)
         chatService.markMessagesAsRead(username, currentUsername);
 
-        // Зареждане на съобщенията
         List<Message> messages = chatService.getChatBetween(currentUsername, username);
         User chatPartner = userService.findByUsername(username);
 
@@ -75,20 +68,14 @@ public class ChatController {
         return "chat-window";
     }
 
-
-    // Изпращане на съобщение към конкретен потребител
     @PostMapping("/{username}/send")
-    public String sendMessage(@PathVariable String username,
-                              @RequestParam("message") String message,
-                              Principal principal) {
+    public String sendMessage(@PathVariable String username, @RequestParam("message") String message,
+            Principal principal) {
         String senderUsername = principal.getName();
 
-        // Записваме съобщението, tripId е null за директен чат
         chatService.saveMessage(null, senderUsername, message, username);
 
         return "redirect:/chat/" + username;
     }
-
-
 
 }

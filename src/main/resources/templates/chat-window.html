@@ -21,13 +21,10 @@
 <body class="bg-black text-white min-h-screen flex flex-col relative">
 
 
-
-<!-- Header (sticky) -->
 <div class="sticky top-0 z-20 bg-gray-800/30 backdrop-blur-sm border-b border-gray-700/50">
   <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
     <a href="/chat" class="text-gray-400 hover:text-white transition-colors duration-200">← Назад</a>
     <div class="flex items-center gap-3">
-      <!-- Avatar / Initials -->
       <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-700 flex items-center justify-center text-white font-bold text-sm uppercase">
         <img th:if="${chatPartner.avatarUrl != null}" th:src="@{${chatPartner.avatarUrl}}" alt="Avatar" class="w-full h-full object-cover"/>
         <div th:if="${chatPartner.avatarUrl == null}" class="w-full h-full bg-blue-600 flex items-center justify-center text-white font-bold">
@@ -43,14 +40,12 @@
   </div>
 </div>
 
-<!-- Messages container -->
 <div class="relative z-10 flex-1">
   <div id="messagesContainer"
        class="max-w-4xl mx-auto px-4 py-6 space-y-4 overflow-y-auto h-full"
        style="scroll-behavior: smooth; padding-bottom:6rem;">
     <div th:each="msg, iterStat : ${messages}"
          th:attr="data-message-id=${msg.id}, id=${iterStat.last} ? 'lastMessage' : null">
-      <!-- Incoming -->
       <div th:if="${msg.sender.username != #authentication.name}" class="flex justify-start px-6">
         <div class="max-w-[60%] px-5 py-3 rounded-2xl bg-gray-800/70 backdrop-blur-sm border border-gray-700/50 text-gray-100 animate-fade-in break-words">
           <p class="text-sm break-words whitespace-pre-wrap" th:text="${msg.messageText}">Съобщение</p>
@@ -59,7 +54,6 @@
           <p class="text-[10px] mt-1 text-left text-gray-400 seen-status" th:if="${!msg.read}" style="display:none;">✓ Видяно</p>
         </div>
       </div>
-      <!-- Outgoing -->
       <div th:if="${msg.sender.username == #authentication.name}" class="flex justify-end px-6">
         <div class="max-w-[60%] px-5 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 text-white animate-fade-in break-words">
           <p class="text-sm break-words whitespace-pre-wrap" th:text="${msg.messageText}">Съобщение</p>
@@ -72,7 +66,6 @@
   </div>
 </div>
 
-<!-- Input (sticky bottom) -->
 <div class="sticky bottom-0 z-20 bg-gray-800/30 backdrop-blur-sm border-t border-gray-700/50">
   <div class="max-w-4xl mx-auto px-4 py-4">
     <form id="chatForm" class="flex gap-3" onsubmit="sendMessage(event)">
@@ -93,7 +86,6 @@
   </div>
 </div>
 
-<!-- Sound -->
 <audio id="notificationSound" src="/sounds/notification.mp3" preload="auto"></audio>
 
 <script th:inline="javascript">
@@ -176,7 +168,6 @@
 
     container.appendChild(messageElement);
 
-    // Скрол долу, когато получаваме ново съобщение от другия
     if (!isSender) {
       container.scrollTop = container.scrollHeight;
     }
@@ -213,7 +204,6 @@
                .replace(/'/g, "&#039;");
   }
 
-  // Скрол до последното съобщение след пълно зареждане на страницата
   window.addEventListener('load', () => {
   const container = document.getElementById('messagesContainer');
   if (!container) return;

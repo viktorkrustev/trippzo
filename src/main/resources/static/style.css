@@ -1,4 +1,3 @@
-/* Примерна анимация при зареждане */
 .fade-in {
     opacity: 0;
     transform: translateY(20px);
@@ -12,13 +11,11 @@
     }
 }
 
-/* Примерна hover анимация за бутони */
 button:hover {
     transform: scale(1.05);
     transition: transform 0.3s ease;
 }
 
-/* Плавно преминаване при hover */
 a {
     transition: color 0.3s ease, transform 0.3s ease;
 }

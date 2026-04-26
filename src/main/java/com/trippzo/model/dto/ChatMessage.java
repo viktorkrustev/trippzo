@@ -25,10 +25,10 @@ public class ChatMessage {
         this.receiverUsername = receiverUsername;
     }
 
-
     public Long getTripId() {
         return tripId;
     }
+
     public void setTripId(Long tripId) {
         this.tripId = tripId;
     }
@@ -36,6 +36,7 @@ public class ChatMessage {
     public String getSenderUsername() {
         return senderUsername;
     }
+
     public void setSenderUsername(String senderUsername) {
         this.senderUsername = senderUsername;
     }
@@ -43,6 +44,7 @@ public class ChatMessage {
     public String getContent() {
         return content;
     }
+
     public void setContent(String content) {
         this.content = content;
     }

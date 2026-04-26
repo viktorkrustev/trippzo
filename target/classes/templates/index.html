@@ -1,188 +1,180 @@
-<!DOCTYPE html>
-<html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trippzo - Начална страница</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
-    <style>
-        /* Анимирани плаващи кръгове */
-        .animated-bg {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(80px);
-          opacity: 0.15;
-          animation: float 15s ease-in-out infinite alternate;
-        }
-        .delay-1 { animation-delay: 5s; }
-        .delay-2 { animation-delay: 10s; }
+<!DOCTYPE html> <html lang="bg" xmlns:th="http://www.w3.org/1999/xhtml"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Trippzo - Начална страница</title> <script src="https://cdn.tailwindcss.com"></script> <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" /> <style> :root { /* Нова brand палитра: Sunset градиент (без синьо/лилаво) */ --gradient-hero: linear-gradient(135deg, #f43f5e 0%, #fb923c 100%); } /* Интеграция на навигацията */ nav { background: transparent !important; backdrop-filter: none !important; border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important; } .bg-brand-gradient { background: var(--gradient-hero); } .premium-shadow { box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.4); } </style> </head> <body class="bg-gray-950 text-white overflow-x-hidden font-sans">
+<header class="relative min-h-[65vh] flex flex-col overflow-hidden bg-cover bg-center"
+        style="background-image: url('/images/road.png');">
 
-        @keyframes float {
-          0% { transform: translateY(0) translateX(0) rotate(0deg); }
-          50% { transform: translateY(-60px) translateX(40px) rotate(45deg); }
-          100% { transform: translateY(0) translateX(0) rotate(0deg); }
-        }
-    </style>
-</head>
-<body class="bg-gray-950 text-white overflow-x-hidden">
+    <div class="absolute inset-0 bg-black/70 z-0"></div>
 
-<!-- Navbar -->
-<div th:replace="fragments/navbar :: navbar"></div>
+    <div class="absolute top-0 left-0 w-full z-50 border-b border-white/10">
+        <div th:replace="fragments/navbar :: navbar"></div>
+    </div>
 
-<!-- Hero Section -->
-<section class="relative min-h-[60vh] flex flex-col justify-center items-center px-4 sm:px-6 overflow-hidden">
-    <!-- Плаващи кръгове -->
-    <div class="animated-bg w-56 sm:w-72 h-56 sm:h-72 bg-blue-500 top-1/3 left-1/4"></div>
-    <div class="animated-bg w-48 sm:w-64 h-48 sm:h-64 bg-purple-500 bottom-1/4 right-1/4 delay-1"></div>
-    <div class="animated-bg w-60 sm:w-80 h-60 sm:h-80 bg-pink-500 top-10 right-1/3 delay-2"></div>
+    <div class="relative z-10 flex-grow flex flex-col justify-center items-center px-6 text-center py-20">
+        <div class="max-w-3xl w-full">
 
-    <!-- Съдържание -->
-    <div class="relative z-10 max-w-3xl w-full text-center -mt-6 sm:-mt-10 px-2">
-        <h1 data-aos="fade-up" class="text-5xl sm:text-7xl lg:text-7xl font-bold mb-4 leading-tight">
-      <span class="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-        Trippzo
-      </span>
-        </h1>
-        <p data-aos="fade-up" data-aos-delay="100" class="text-base sm:text-lg md:text-xl text-gray-300 mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed">
-            Платформа за споделено пътуване, свързваща шофьори и пътници за по-умни и по-евтини пътувания
-        </p>
+            <h1 class="text-5xl sm:text-6xl font-semibold mb-4 tracking-tight text-white">
+                Trippzo
+            </h1>
 
-        <!-- CTA Buttons -->
-        <div data-aos="zoom-in" class="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto">
-            <a href="/trips/search"
-               class="w-full sm:w-1/2 flex items-center justify-center px-5 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-semibold text-base sm:text-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-2xl hover:shadow-blue-500/25 hover:scale-105">
-                🔍 Търси пътуване
-            </a>
-            <a href="/trips/create"
-               class="w-full sm:w-1/2 flex items-center justify-center px-5 py-3 bg-gray-800/50 border border-gray-700 text-white rounded-xl font-semibold text-base sm:text-lg hover:bg-gray-700/50 transition-all duration-200 backdrop-blur-sm">
-                ➕ Създай пътуване
-            </a>
+            <p class="text-base sm:text-lg text-zinc-400 mb-8 max-w-xl mx-auto">
+                Интелигентна платформа за споделено пътуване между шофьори и пътници.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="/trips/search"
+                   class="px-6 py-3 bg-white text-black rounded-lg text-sm hover:bg-gray-200 transition">
+                    Търсене
+                </a>
+
+                <a href="/trips/create"
+                   class="px-6 py-3 border border-zinc-600 text-white rounded-lg text-sm hover:bg-white/10 transition">
+                    Публикуване
+                </a>
+            </div>
+
+        </div>
+    </div>
+</header>
+
+<section class="py-16 bg-zinc-100 text-black">
+    <div class="max-w-5xl mx-auto px-4">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Card 1 -->
+            <div class="border border-zinc-200 rounded-lg p-6 bg-white hover:bg-zinc-50 transition">
+
+                <div class="w-10 h-10 bg-zinc-900 rounded-md flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                              d="M9 20l-5.447-2.724A2 2 0 013 15.488V5.13a2 2 0 011.13-1.788L9 1m12 19l-5.447-2.724A2 2 0 0014 18.512V8.13a2 2 0 00-1.13-1.788L9 4m12 16V4m-12 0v16"/>
+                    </svg>
+                </div>
+
+                <h3 class="text-base font-medium mb-2">
+                    Лесно намиране на пътувания
+                </h3>
+
+                <p class="text-sm text-zinc-600">
+                    Бързо търсене на маршрути според начална точка, дестинация и дата.
+                </p>
+
+            </div>
+
+            <!-- Card 2 -->
+            <div class="border border-zinc-200 rounded-lg p-6 bg-white hover:bg-zinc-50 transition">
+
+                <div class="w-10 h-10 bg-zinc-900 rounded-md flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                </div>
+
+                <h3 class="text-base font-medium mb-2">
+                    Директна комуникация
+                </h3>
+
+                <p class="text-sm text-zinc-600">
+                    Свържи се с шофьора или пътниците за уточняване на детайли.
+                </p>
+
+            </div>
+
         </div>
     </div>
 </section>
-<!-- Features Section -->
-<section class="pt-2 pb-4 sm:pt-4 sm:pb-6">
+
+<section class="py-12 bg-[#0d0d0d] border-y border-zinc-900">
+    <div class="max-w-6xl mx-auto px-6">
+        <h2 data-aos="fade-up" class="text-3xl font-bold mb-12 text-center text-white tracking-tight">Процес на работа</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div data-aos="fade-up" class="text-center">
+                <span class="text-sm font-semibold text-zinc-400 uppercase tracking-[0.2em] mb-4 block">Стъпка 01</span>
+                <h3 class="text-xl font-semibold text-white mb-3">Регистрация</h3>
+                <p class="text-zinc-300 font-light text-base px-4 leading-relaxed">Бързо създаване на профил за пълен достъп до всички функции.</p>
+            </div>
+            <div data-aos="fade-up" data-aos-delay="100" class="text-center">
+                <span class="text-sm font-semibold text-zinc-400 uppercase tracking-[0.2em] mb-4 block">Стъпка 02</span>
+                <h3 class="text-xl font-semibold text-white mb-3">Избор</h3>
+                <p class="text-zinc-300 font-light text-base px-4 leading-relaxed">Намерете идеалното пътуване или публикувайте вашето.</p>
+            </div>
+            <div data-aos="fade-up" data-aos-delay="200" class="text-center">
+                <span class="text-sm font-semibold text-zinc-400 uppercase tracking-[0.2em] mb-4 block">Стъпка 03</span>
+                <h3 class="text-xl font-semibold text-white mb-3">Пътуване</h3>
+                <p class="text-zinc-300 font-light text-base px-4 leading-relaxed">Свържете се, пътувайте удобно и споделете разходите.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-12 bg-[#0a0a0a]">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
-        <h2 data-aos="fade-right" class="text-2xl sm:text-3xl font-bold mb-6 text-center">
-            Нашите функции
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
-            <div data-aos="fade-up" class="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 hover:bg-gray-800/50 transition-all duration-300 text-center">
-                <div class="text-4xl mb-4">🗺️</div>
-                <h3 class="text-lg sm:text-xl font-semibold mb-2 text-blue-400">Карти в реално време</h3>
-                <p class="text-gray-400 text-sm sm:text-base">Виж маршрути и локации с интегрирани карти</p>
-            </div>
-            <div data-aos="fade-up" data-aos-delay="100" class="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 hover:bg-gray-800/50 transition-all duration-300 text-center">
-                <div class="text-4xl mb-4">💬</div>
-                <h3 class="text-lg sm:text-xl font-semibold mb-2 text-purple-400">Чат в реално време</h3>
-                <p class="text-gray-400 text-sm sm:text-base">Комуникирай директно с шофьори и пътници</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-
-<!-- How It Works Section -->
-<section class="py-16 bg-gray-950 border-t border-gray-800">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-        <h2 data-aos="fade-up" class="text-2xl sm:text-3xl font-bold mb-10">Как работи Trippzo?</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 text-gray-300">
-            <div data-aos="zoom-in" class="p-6 bg-gray-800/30 rounded-xl border border-gray-700">
-                <div class="text-5xl mb-4">📝</div>
-                <h3 class="font-semibold text-lg mb-2">1. Регистрирай се</h3>
-                <p>Създай профил само за минута и се присъедини към общността.</p>
-            </div>
-            <div data-aos="zoom-in" data-aos-delay="100" class="p-6 bg-gray-800/30 rounded-xl border border-gray-700">
-                <div class="text-5xl mb-4">🔍</div>
-                <h3 class="font-semibold text-lg mb-2">2. Търси или публикувай</h3>
-                <p>Намери пътуване или създай свое и покани други.</p>
-            </div>
-            <div data-aos="zoom-in" data-aos-delay="200" class="p-6 bg-gray-800/30 rounded-xl border border-gray-700">
-                <div class="text-5xl mb-4">🚗</div>
-                <h3 class="font-semibold text-lg mb-2">3. Пътувай удобно</h3>
-                <p>Свържи се с други и сподели разходите по пътуването.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Popular Destinations -->
-<section class="py-16 bg-gray-900/40 border-t border-gray-800">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
-        <h2 data-aos="fade-up" class="text-2xl sm:text-3xl font-bold mb-10 text-center">Популярни дестинации</h2>
+        <h2 data-aos="fade-up" class="text-2xl sm:text-3xl font-bold mb-10 text-center text-white">Популярни дестинации</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            <div data-aos="fade-up" class="rounded-xl overflow-hidden shadow-lg border border-gray-700 bg-gray-800/40">
-                <img src="https://impro.usercontent.one/appid/oneComWsb/domain/gradsofia.eu/media/gradsofia.eu/onewebmedia/Sofia-%D0%9E%D0%B1%D0%B8%D1%87%D0%B0%D0%BC%20%D0%91%D1%8A%D0%BB%D0%B3%D0%B0%D1%80%D0%B8%D1%8F.jpg?etag=W%2F%226e394-63b00b4c%22&sourceContentType=image%2Fjpeg&quality=85" alt="София" class="w-full h-48 object-cover" />
-                <div class="p-4">
-                    <h3 class="text-lg font-semibold text-white">София</h3>
-                    <p class="text-gray-400 text-sm">Най-често избирана дестинация от пътуващи.</p>
+            <div data-aos="fade-up" class="rounded-xl overflow-hidden shadow-lg border border-zinc-800 bg-zinc-900/50">
+                <img src="https://impro.usercontent.one/appid/oneComWsb/domain/gradsofia.eu/media/gradsofia.eu/onewebmedia/Sofia-%D0%9E%D0%B1%D0%B8%D1%87%D0%B0%D0%BC%20%D0%91%D1%8A%D0%BB%D0%B3%D0%B0%D1%80%D0%B8%D1%8F.jpg?etag=W%2F%226e394-63b00b4c%22&sourceContentType=image%2Fjpeg&quality=85" alt="София" class="w-full h-48 object-cover opacity-90" />
+                <div class="p-5">
+                    <h3 class="text-xl font-semibold text-white mb-2">София</h3>
+                    <p class="text-zinc-300 text-sm leading-relaxed">Най-често избирана дестинация от пътуващи.</p>
                 </div>
             </div>
-            <div data-aos="fade-up" data-aos-delay="100" class="rounded-xl overflow-hidden shadow-lg border border-gray-700 bg-gray-800/40">
-                <img src="https://www.alphaestate.bg/wp-content/uploads/2024/08/orig-orig-plovdiv-2.jpg" alt="Пловдив" class="w-full h-48 object-cover" />
-                <div class="p-4">
-                    <h3 class="text-lg font-semibold text-white">Пловдив</h3>
-                    <p class="text-gray-400 text-sm">История, култура и модерно изживяване.</p>
+            <div data-aos="fade-up" data-aos-delay="100" class="rounded-xl overflow-hidden shadow-lg border border-zinc-800 bg-zinc-900/50">
+                <img src="https://www.alphaestate.bg/wp-content/uploads/2024/08/orig-orig-plovdiv-2.jpg" alt="Пловдив" class="w-full h-48 object-cover opacity-90" />
+                <div class="p-5">
+                    <h3 class="text-xl font-semibold text-white mb-2">Пловдив</h3>
+                    <p class="text-zinc-300 text-sm leading-relaxed">История, култура и модерно изживяване.</p>
                 </div>
             </div>
-            <div data-aos="fade-up" data-aos-delay="200" class="rounded-xl overflow-hidden shadow-lg border border-gray-700 bg-gray-800/40">
-                <img src="https://darikradio.bg/media/356/ttz-varna.m.jpg" alt="Варна" class="w-full h-48 object-cover" />
-                <div class="p-4">
-                    <h3 class="text-lg font-semibold text-white">Варна</h3>
-                    <p class="text-gray-400 text-sm">Любима морска дестинация през лятото.</p>
+            <div data-aos="fade-up" data-aos-delay="200" class="rounded-xl overflow-hidden shadow-lg border border-zinc-800 bg-zinc-900/50">
+                <img src="https://darikradio.bg/media/356/ttz-varna.m.jpg" alt="Варна" class="w-full h-48 object-cover opacity-90" />
+                <div class="p-5">
+                    <h3 class="text-xl font-semibold text-white mb-2">Варна</h3>
+                    <p class="text-zinc-300 text-sm leading-relaxed">Любима морска дестинация през лятото.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- FAQ Section -->
-<section class="py-16 bg-gray-950 border-t border-gray-800">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6">
-        <h2 data-aos="fade-up" class="text-2xl sm:text-3xl font-bold mb-10 text-center">Често задавани въпроси</h2>
+<section class="py-12 bg-[#0d0d0d] border-t border-zinc-900">
+    <div class="max-w-3xl mx-auto px-6">
+        <h2 data-aos="fade-up" class="text-3xl font-bold mb-12 text-center text-white tracking-tight">Въпроси и отговори</h2>
         <div class="space-y-6">
-            <div data-aos="fade-up" data-aos-delay="500" class="border-b border-gray-700 pb-4">
-                <h3 class="font-semibold text-lg text-white">⏰ Колко време преди тръгване трябва да резервирам?</h3>
-                <p class="text-gray-400 mt-2 text-sm">Най-добре е да резервирате възможно най-рано, но често има и обяви в последния момент.</p>
+            <div data-aos="fade-up" class="border-b border-zinc-800 pb-6">
+                <h3 class="text-xl font-medium text-white mb-3">Кога е най-подходящото време за резервация?</h3>
+                <p class="text-zinc-300 font-light text-base leading-relaxed">Препоръчваме резервация 2-3 дни предварително, за да си гарантирате място, въпреки че често има оферти и в последния момент.</p>
             </div>
-            <div data-aos="fade-up" data-aos-delay="300" class="border-b border-gray-700 pb-4">
-                <h3 class="font-semibold text-lg text-white">🚗 Мога ли сам да създам пътуване?</h3>
-                <p class="text-gray-400 mt-2 text-sm">Да, всеки регистриран шофьор може да публикува маршрут и да предложи свободни места.</p>
-            </div>
-            <div data-aos="fade-up" data-aos-delay="200" class="border-b border-gray-700 pb-4">
-                <h3 class="font-semibold text-lg text-white">📱 Има ли мобилно приложение?</h3>
-                <p class="text-gray-400 mt-2 text-sm">Скоро очаквайте мобилно приложение за Android и iOS!</p>
+            <div data-aos="fade-up" class="border-b border-zinc-800 pb-6">
+                <h3 class="text-xl font-medium text-white mb-3">Как мога да предложа пътуване?</h3>
+                <p class="text-zinc-300 font-light text-base leading-relaxed">Всеки верифициран потребител може да публикува маршрут през бутона "Публикуване", определяйки дата, час и брой свободни места.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Auth Section -->
-<section class="bg-gray-900/50 backdrop-blur-sm border-t border-gray-800 py-12 sm:py-16">
-    <div data-aos="fade-up" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-2xl sm:text-3xl font-bold mb-6">Започни своето пътешествие</h2>
+<section class="py-24 bg-white text-black">
+    <div data-aos="fade-up" class="max-w-4xl mx-auto px-6 text-center">
+        <h2 class="text-4xl font-bold mb-8 tracking-tight">Започнете вашето пътуване с Trippzo</h2>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/login"
-               class="w-full sm:w-auto px-8 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-all duration-200 text-center">
-                Вход
+            <a href="/register" class="px-10 py-4 bg-black text-white rounded-full font-medium hover:bg-zinc-800 transition-colors">
+                Създаване на профил
             </a>
-            <a href="/register"
-               class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-center">
-                Регистрация
+            <a href="/login" class="px-10 py-4 bg-transparent border border-zinc-300 text-black rounded-full font-medium hover:bg-zinc-50 transition-colors">
+                Вход в системата
             </a>
         </div>
     </div>
 </section>
 
-<!-- Останалата част от страницата (Auth Section + AOS script) остава същата -->
-
+<footer class="py-12 border-t border-zinc-900 text-center">
+    <p class="text-xs text-zinc-600 uppercase tracking-widest">&copy; 2026 Trippzo. Всички права запазени.</p>
+</footer>
 
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>
     AOS.init({
-      duration: 800,
-      easing: 'ease-out',
+      duration: 1000,
+      easing: 'ease-out-cubic',
       once: true
     });
 </script>

@@ -16,7 +16,6 @@ public class TripCleanupService {
         this.tripRepository = tripRepository;
     }
 
-    // Изпълнява се всеки ден в 00:00
     @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
     public void deletePastTrips() {

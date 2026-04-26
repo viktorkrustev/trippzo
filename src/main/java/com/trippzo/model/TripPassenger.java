@@ -1,10 +1,15 @@
 package com.trippzo.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "trip_passengers")
+@Getter
+@Setter
 public class TripPassenger {
 
     @Id
@@ -18,30 +23,4 @@ public class TripPassenger {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    // гетъри и сетъри
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Trip getTrip() {
-        return trip;
-    }
-
-    public void setTrip(Trip trip) {
-        this.trip = trip;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
 }

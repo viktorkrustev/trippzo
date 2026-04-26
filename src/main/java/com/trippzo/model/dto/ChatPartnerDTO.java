@@ -6,19 +6,15 @@ public class ChatPartnerDTO {
     private User user;
     private int unreadMessagesCount;
 
-    // Допълнителни полета за показване в чата
     private String lastMessageTime;
     private String lastMessage;
     private String tripRoute;
     private String avatarUrl;
 
-
     public ChatPartnerDTO(User user, int unreadMessagesCount) {
         this.user = user;
         this.unreadMessagesCount = unreadMessagesCount;
     }
-
-    // --- Getters и Setters ---
 
     public User getUser() {
         return user;
@@ -60,7 +56,6 @@ public class ChatPartnerDTO {
         this.tripRoute = tripRoute;
     }
 
-    // Помощен метод за лесен достъп до username в Thymeleaf
     public String getUsername() {
         return user != null ? user.getUsername() : "";
     }

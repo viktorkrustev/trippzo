@@ -12,11 +12,9 @@ public interface MessageRepository extends CrudRepository<Message, Long> {
 
     List<Message> findByTripIdOrderByTimestampAsc(Long tripId);
 
-    // Вземи всички receivers, на които е писал дадения потребител
     @Query("SELECT DISTINCT m.receiver FROM Message m WHERE m.sender.username = :username")
     Set<User> findReceiversBySender(String username);
 
-    // Вземи всички senders, които са писали на дадения потребител
     @Query("SELECT DISTINCT m.sender FROM Message m WHERE m.receiver.username = :username")
     Set<User> findSendersByReceiver(String username);
 
@@ -29,6 +27,9 @@ public interface MessageRepository extends CrudRepository<Message, Long> {
     List<Message> findChatBetweenUsers(String userA, String userB);
 
     int countBySenderUsernameAndReceiverUsernameAndReadFalse(String senderUsername, String receiverUsername);
+
     List<Message> findBySenderUsernameAndReceiverUsernameAndReadFalse(String senderUsername, String receiverUsername);
+
+    int countByReceiverUsernameAndReadFalse(String receiverUsername);
 
 }

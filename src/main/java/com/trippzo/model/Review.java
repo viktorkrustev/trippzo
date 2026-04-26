@@ -1,12 +1,18 @@
 package com.trippzo.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reviews")
+@Getter
+@Setter
 public class Review {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -22,68 +28,10 @@ public class Review {
     private User reviewee;
 
     @Column(nullable = false)
-    private int rating;  // 1-5
+    private int rating; // 1-5
 
     @Column(columnDefinition = "TEXT")
     private String comment;
 
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    // гетъри и сетъри
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Trip getTrip() {
-        return trip;
-    }
-
-    public void setTrip(Trip trip) {
-        this.trip = trip;
-    }
-
-    public User getReviewer() {
-        return reviewer;
-    }
-
-    public void setReviewer(User reviewer) {
-        this.reviewer = reviewer;
-    }
-
-    public User getReviewee() {
-        return reviewee;
-    }
-
-    public void setReviewee(User reviewee) {
-        this.reviewee = reviewee;
-    }
-
-    public int getRating() {
-        return rating;
-    }
-
-    public void setRating(int rating) {
-        this.rating = rating;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 }

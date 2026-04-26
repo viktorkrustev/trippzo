@@ -17,40 +17,26 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/ws/**"))
+        return httpSecurity.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/ws/**"))
                 .authorizeHttpRequests(authorizeRequests -> {
-                    authorizeRequests
-                            .requestMatchers("/static/**", "/css/**", "/js/**", "/img/**").permitAll()
+                    authorizeRequests.requestMatchers("/static/**", "/css/**", "/js/**", "/img/**").permitAll()
                             .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                             .requestMatchers("/index", "/login", "/register", "/trips/search").permitAll()
-                            .requestMatchers("/api/**").permitAll()
-                            .requestMatchers("/ws/**").permitAll() // ✅ тук
+                            .requestMatchers("/api/**").permitAll().requestMatchers("/ws-chat/**").permitAll()
                             .anyRequest().authenticated();
-                })
-                .formLogin(formLogin -> {
-                    formLogin
-                            .loginPage("/login")
-                            .usernameParameter("username")
-                            .passwordParameter("password")
-                            .defaultSuccessUrl("/", true)
-                            .failureUrl("/login?error=true")
-                            .permitAll();
-                })
-                .logout(logout -> {
-                    logout
-                            .logoutUrl("/logout")
-                            .logoutSuccessUrl("/")
-                            .invalidateHttpSession(true)
-                            .permitAll();
-                })
-                .build();
+                }).formLogin(formLogin -> {
+                    formLogin.loginPage("/login").usernameParameter("username").passwordParameter("password")
+                            .defaultSuccessUrl("/", true).failureUrl("/login?error=true").permitAll();
+                }).logout(logout -> {
+                    logout.logoutUrl("/logout").logoutSuccessUrl("/").invalidateHttpSession(true).permitAll();
+                }).build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -58,7 +44,4 @@ public class SecurityConfig {
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
-
-
-
 }
