@@ -1,7 +1,6 @@
 package com.trippzo.service;
 
 import com.trippzo.model.Trip;
-import com.trippzo.model.TripPassenger;
 import com.trippzo.model.User;
 import com.trippzo.repository.TripRepository;
 import org.springframework.stereotype.Service;
