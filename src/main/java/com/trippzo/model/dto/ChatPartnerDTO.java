@@ -19,6 +19,7 @@ public class ChatPartnerDTO {
         this.user = user;
         this.unreadMessagesCount = unreadMessagesCount;
     }
+
     public String getUsername() {
         return user.getUsername();
     }
