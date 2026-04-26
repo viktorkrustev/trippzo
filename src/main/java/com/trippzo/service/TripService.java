@@ -20,8 +20,8 @@ public class TripService {
         this.tripRepository = tripRepository;
     }
 
-    public Trip saveTrip(Trip trip) {
-        return tripRepository.save(trip);
+    public void saveTrip(Trip trip) {
+        tripRepository.save(trip);
     }
 
     public List<Trip> searchTrips(String origin, String destination, String dateString) {
@@ -61,14 +61,6 @@ public class TripService {
         }
     }
 
-    public List<Trip> getTripsByDriver(User driver) {
-        return tripRepository.findByDriver(driver);
-    }
-
-    public List<Trip> getTripsByPassenger(User passenger) {
-        return tripRepository.findByPassengersUser(passenger);
-    }
-
     public List<Trip> getTripsAsDriver(User user) {
         return tripRepository.findByDriver(user);
     }
@@ -89,10 +81,6 @@ public class TripService {
 
     public void deleteTrip(Trip trip) {
         tripRepository.delete(trip);
-    }
-
-    public List<Trip> getAllTrips() {
-        return tripRepository.findAll();
     }
 
     public Trip getTripById(Long id) {

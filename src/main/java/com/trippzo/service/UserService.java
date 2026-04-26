@@ -16,7 +16,7 @@ public class UserService {
         this.passwordEncoder = encoder;
     }
 
-    public User registerUser(User user) {
+    public void registerUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Имейлът вече е зает");
         }
@@ -26,15 +26,15 @@ public class UserService {
 
         user.setPasswordHash(passwordEncoder.encode(user.getPassword()));
 
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElse(null);
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    public void saveUser(User user) {
+        userRepository.save(user);
     }
 
 }
