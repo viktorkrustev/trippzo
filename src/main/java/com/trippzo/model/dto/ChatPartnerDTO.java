@@ -1,7 +1,11 @@
 package com.trippzo.model.dto;
 
 import com.trippzo.model.User;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class ChatPartnerDTO {
     private User user;
     private int unreadMessagesCount;
@@ -15,56 +19,7 @@ public class ChatPartnerDTO {
         this.user = user;
         this.unreadMessagesCount = unreadMessagesCount;
     }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public int getUnreadMessagesCount() {
-        return unreadMessagesCount;
-    }
-
-    public void setUnreadMessagesCount(int unreadMessagesCount) {
-        this.unreadMessagesCount = unreadMessagesCount;
-    }
-
-    public String getLastMessageTime() {
-        return lastMessageTime;
-    }
-
-    public void setLastMessageTime(String lastMessageTime) {
-        this.lastMessageTime = lastMessageTime;
-    }
-
-    public String getLastMessage() {
-        return lastMessage;
-    }
-
-    public void setLastMessage(String lastMessage) {
-        this.lastMessage = lastMessage;
-    }
-
-    public String getTripRoute() {
-        return tripRoute;
-    }
-
-    public void setTripRoute(String tripRoute) {
-        this.tripRoute = tripRoute;
-    }
-
     public String getUsername() {
-        return user != null ? user.getUsername() : "";
-    }
-
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
+        return user.getUsername();
     }
 }

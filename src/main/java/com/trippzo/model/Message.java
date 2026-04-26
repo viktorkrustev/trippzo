@@ -36,10 +36,4 @@ public class Message {
 
     @Column(name = "is_read", nullable = false)
     private boolean read = false;
-
-    @PrePersist
-    public void prePersist() {
-        this.timestamp = LocalDateTime.now();
-    }
-
 }

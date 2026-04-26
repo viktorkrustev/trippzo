@@ -41,9 +41,4 @@ public class User {
 
     @Column(length = 255)
     private String avatarUrl;
-
-    @Transient
-    public String getDisplayName() {
-        return fullName != null ? fullName : username;
-    }
 }
