@@ -36,7 +36,6 @@ public class ChatController {
         List<ChatPartnerDTO> partnerDtos = chatPartners.stream().map(partner -> {
             int unreadCount = chatService.countUnreadMessages(currentUsername, partner.getUsername());
 
-            // Пример: форматиране на последно време и последно съобщение, ако искаш може да добавиш в ChatService метод
             String lastMessageTime = chatService.getLastMessageTime(currentUsername, partner.getUsername());
             String lastMessage = chatService.getLastMessageContent(currentUsername, partner.getUsername());
 

@@ -21,7 +21,7 @@ public class Trip {
     @Column(nullable = false, length = 100)
     private String origin;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String destination;
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -43,7 +43,7 @@ public class Trip {
     @Column(length = 100)
     private String car;
 
-    @Column(length = 255)
+    @Column
     private String stops;
 
     @Column(length = 1000)

@@ -18,7 +18,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList(); // Можеш да добавиш роля при нужда
+        return Collections.emptyList();
     }
 
     @Override
