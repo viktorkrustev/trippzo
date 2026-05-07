@@ -39,6 +39,18 @@ public class User {
     @Column(length = 5)
     private String languagePref = "bg";
 
-    @Column(length = 255)
+    @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
+
+    @Column(name = "reputation_points", columnDefinition = "INT DEFAULT 0")
+    private int reputationPoints = 0;
+
+    @Column(name = "driver_level", columnDefinition = "INT DEFAULT 1")
+    private int driverLevel = 1;
+
+    @Column(name = "total_trips", columnDefinition = "INT DEFAULT 0")
+    private int totalTrips = 0;
+
+    @Column(name = "total_reviews", columnDefinition = "INT DEFAULT 0")
+    private int totalReviews = 0;
 }

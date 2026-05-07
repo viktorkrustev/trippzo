@@ -3,6 +3,8 @@ package com.trippzo.service;
 import com.trippzo.model.Trip;
 import com.trippzo.model.User;
 import com.trippzo.repository.TripRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,7 +26,7 @@ public class TripService {
         tripRepository.save(trip);
     }
 
-    public List<Trip> searchTrips(String origin, String destination, String dateString) {
+    public Page<Trip> searchTrips(String origin, String destination, String dateString, Pageable pageable) {
         boolean hasOrigin = origin != null && !origin.isBlank();
         boolean hasDestination = destination != null && !destination.isBlank();
         boolean hasDate = dateString != null && !dateString.isBlank();
@@ -41,23 +43,24 @@ public class TripService {
         if (hasOrigin && hasDestination && hasDate) {
             return tripRepository
                     .findByOriginContainingIgnoreCaseAndDestinationContainingIgnoreCaseAndDepartureDateTimeBetween(
-                            origin, destination, start, end);
+                            origin, destination, start, end, pageable);
         } else if (hasOrigin && hasDestination) {
             return tripRepository.findByOriginContainingIgnoreCaseAndDestinationContainingIgnoreCase(origin,
-                    destination);
+                    destination, pageable);
         } else if (hasOrigin && hasDate) {
-            return tripRepository.findByOriginContainingIgnoreCaseAndDepartureDateTimeBetween(origin, start, end);
+            return tripRepository.findByOriginContainingIgnoreCaseAndDepartureDateTimeBetween(origin, start, end,
+                    pageable);
         } else if (hasDestination && hasDate) {
             return tripRepository.findByDestinationContainingIgnoreCaseAndDepartureDateTimeBetween(destination, start,
-                    end);
+                    end, pageable);
         } else if (hasOrigin) {
-            return tripRepository.findByOriginContainingIgnoreCase(origin);
+            return tripRepository.findByOriginContainingIgnoreCase(origin, pageable);
         } else if (hasDestination) {
-            return tripRepository.findByDestinationContainingIgnoreCase(destination);
+            return tripRepository.findByDestinationContainingIgnoreCase(destination, pageable);
         } else if (hasDate) {
-            return tripRepository.findByDepartureDateTimeBetween(start, end);
+            return tripRepository.findByDepartureDateTimeBetween(start, end, pageable);
         } else {
-            return tripRepository.findAll();
+            return tripRepository.findAll(pageable);
         }
     }
 

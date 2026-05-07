@@ -1,72 +1,145 @@
 <!DOCTYPE html>
-<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Съобщения</title>
+  <title th:text="#{chat.list.title} + ' | Trippzo'">Съобщения | Trippzo</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(900px circle at 10% 0%, rgba(59,130,246,0.18), transparent 40%),
+        radial-gradient(800px circle at 90% 20%, rgba(168,85,247,0.12), transparent 45%),
+        #05060a;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(18px);
+    }
+
+    .soft {
+      box-shadow: 0 25px 80px rgba(0,0,0,0.7);
+    }
+
+    .card {
+      transition: all .25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .badge {
+      box-shadow: 0 0 20px rgba(99,102,241,0.4);
+    }
+  </style>
 </head>
-<body class="bg-black text-white min-h-screen flex flex-col relative">
+
+<body class="text-white min-h-screen flex flex-col">
 
 
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<div class="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-  <div class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-    <a href="/" class="text-gray-400 hover:text-white transition-colors duration-200 flex items-center gap-2">
-      ← Назад
-    </a>
-    <h1 class="text-3xl font-bold text-center sm:text-left w-full sm:w-auto">
-      <span class="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-        💬 Съобщения
-      </span>
-    </h1>
-    <div class="w-full sm:w-auto"></div>
+<main class="w-full max-w-5xl mx-auto px-6 py-10 flex-1">
+
+  
+  <div class="flex items-center justify-between mb-10">
+    <div class="text-center">
+      <h1 class="text-3xl md:text-4xl font-bold" th:text="#{chat.list.title}">
+        Съобщения
+      </h1>
+    </div>
+    <div class="w-10"></div>
   </div>
 
-  <div class="space-y-4" th:if="${chatPartners != null and !chatPartners.isEmpty()}">
+  
+  <div class="space-y-3">
 
     <a th:each="partner : ${chatPartners}"
        th:href="@{/chat/{username}(username=${partner.username})}"
-       class="block w-full bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-4 sm:p-6 hover:bg-gray-800/50 transition-all duration-300 hover:scale-[1.02]">
-      <div class="flex items-center gap-4">
+       class="card glass soft rounded-2xl p-4 md:p-5 flex items-center gap-4">
 
-        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-gray-700 flex-shrink-0">
-          <img th:if="${partner.avatarUrl != null}" th:src="@{${partner.avatarUrl}}" alt="Avatar" class="w-full h-full object-cover"/>
-          <div th:if="${partner.avatarUrl == null}" class="w-full h-full bg-purple-700 flex items-center justify-center text-white font-semibold text-lg select-none"
-               th:text="${partner.username.length() > 1 ? partner.username.substring(0,2) : partner.username.substring(0,1)}">
-          </div>
-        </div>
+      
+      <div class="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border border-white/10 flex items-center justify-center bg-white/5 flex-shrink-0">
 
-        <div class="flex-1 min-w-0">
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-1 gap-1 sm:gap-0">
-            <h3 class="text-lg font-semibold text-white truncate" th:text="${partner.username}">Име</h3>
-            <div class="flex items-center gap-2">
-              <span th:if="${partner.unreadMessagesCount > 0}"
-                    class="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs px-2 py-1 rounded-full font-medium"
-                    th:text="${partner.unreadMessagesCount}">2</span>
-              <span class="text-sm text-gray-400" th:text="${partner.lastMessageTime}">10:30</span>
-            </div>
-          </div>
-          <p class="text-gray-400 truncate" th:text="${partner.lastMessage}">Последно съобщение</p>
-        </div>
+        <img th:if="${partner.avatarUrl != null and !#strings.isEmpty(partner.avatarUrl)}"
+             th:src="@{${partner.avatarUrl}}"
+             class="w-full h-full object-cover"/>
+
+        <span th:if="${partner.avatarUrl == null or #strings.isEmpty(partner.avatarUrl)}"
+              class="text-white/60 font-bold"
+              th:text="#{chat.list.default_avatar}">
+          👤
+        </span>
 
       </div>
+
+      
+      <div class="flex-1 min-w-0">
+
+        <div class="flex justify-between items-center">
+
+          <h3 class="font-semibold text-white truncate"
+              th:text="${partner.username}">
+            User
+          </h3>
+
+          <div class="flex items-center gap-2">
+
+            <span th:if="${partner.unreadMessagesCount > 0}"
+                  class="badge bg-indigo-500 text-white text-xs px-2 py-1 rounded-full font-bold"
+                  th:text="${partner.unreadMessagesCount}">
+            </span>
+
+            <span class="text-white/40 text-xs"
+                  th:text="${partner.lastMessageTime}">
+              10:30
+            </span>
+
+          </div>
+
+        </div>
+
+        <p class="text-white/50 text-sm truncate mt-1"
+           th:text="${partner.lastMessage != null ? partner.lastMessage : #messages.msg('chat.list.last_msg_placeholder')}">
+          Последно съобщение...
+        </p>
+
+      </div>
+
     </a>
 
   </div>
 
-  <div class="text-center py-16" th:if="${chatPartners == null or chatPartners.isEmpty()}">
-    <div class="text-6xl mb-4">💬</div>
-    <h3 class="text-xl font-semibold mb-2 text-gray-300">Няма съобщения</h3>
-    <p class="text-gray-400 mb-8 max-w-md mx-auto">Започни разговор с други потребители за споделени пътувания</p>
+  
+  <div class="text-center py-20"
+       th:if="${chatPartners == null or chatPartners.isEmpty()}">
+
+    <div class="text-6xl mb-4" th:text="#{chat.list.empty.icon}">💬</div>
+
+    <h3 class="text-xl font-semibold text-white/70" th:text="#{chat.list.empty.title}">
+      Няма съобщения
+    </h3>
+
+    <p class="text-white/40 mt-2 max-w-md mx-auto" th:text="#{chat.list.empty.subtitle}">
+      Започни разговор с други потребители за да организираш пътувания
+    </p>
+
     <a href="/trips/search"
-       class="inline-block px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200">
+       class="inline-block mt-6 px-6 py-3 bg-white text-black rounded-xl font-semibold hover:scale-105 transition"
+       th:text="#{chat.list.empty.btn}">
       Търси пътувания
     </a>
+
   </div>
 
-</div>
+</main>
 
 </body>
 </html>

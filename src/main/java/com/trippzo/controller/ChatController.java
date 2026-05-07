@@ -6,9 +6,14 @@ import com.trippzo.model.dto.ChatPartnerDTO;
 import com.trippzo.service.ChatService;
 import com.trippzo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.security.Principal;
 import java.util.List;
@@ -42,10 +47,17 @@ public class ChatController {
             ChatPartnerDTO dto = new ChatPartnerDTO(partner, unreadCount);
             dto.setLastMessageTime(lastMessageTime);
             dto.setLastMessage(lastMessage);
-
             dto.setAvatarUrl(partner.getAvatarUrl());
 
             return dto;
+        }).sorted((a, b) -> {
+            // null-safe sort (най-новите първи)
+            if (a.getLastMessageTime() == null)
+                return 1;
+            if (b.getLastMessageTime() == null)
+                return -1;
+
+            return b.getLastMessageTime().compareTo(a.getLastMessageTime());
         }).toList();
 
         model.addAttribute("chatPartners", partnerDtos);
@@ -67,14 +79,14 @@ public class ChatController {
         return "chat-window";
     }
 
-    @PostMapping("/{username}/send")
-    public String sendMessage(@PathVariable String username, @RequestParam("message") String message,
-            Principal principal) {
-        String senderUsername = principal.getName();
+    @GetMapping("/unread/count")
+    @ResponseBody
+    public int getUnreadCount(@AuthenticationPrincipal UserDetails user) {
 
-        chatService.saveMessage(null, senderUsername, message, username);
+        if (user == null) {
+            return 0;
+        }
 
-        return "redirect:/chat/" + username;
+        return chatService.countAllUnreadMessages(user.getUsername());
     }
-
 }

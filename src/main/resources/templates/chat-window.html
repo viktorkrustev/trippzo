@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
-  <title>Чат</title>
+  <title th:text="${chatPartner.username} + ' | ' + #{chat.title.suffix}">Чат</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
@@ -23,17 +23,17 @@
 
 <div class="sticky top-0 z-20 bg-gray-800/30 backdrop-blur-sm border-b border-gray-700/50">
   <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-    <a href="/chat" class="text-gray-400 hover:text-white transition-colors duration-200">← Назад</a>
+    <a href="/chat" class="text-gray-400 hover:text-white transition-colors duration-200" th:text="#{chat.back}">← Назад</a>
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-700 flex items-center justify-center text-white font-bold text-sm uppercase">
         <img th:if="${chatPartner.avatarUrl != null}" th:src="@{${chatPartner.avatarUrl}}" alt="Avatar" class="w-full h-full object-cover"/>
         <div th:if="${chatPartner.avatarUrl == null}" class="w-full h-full bg-blue-600 flex items-center justify-center text-white font-bold">
-          <span th:text="${chatPartner.fullName != null} ? ${chatPartner.fullName.substring(0,1)} : ${chatPartner.username.substring(0,1)}"></span>
+          <span th:text="${chatPartner.fullName != null && !#strings.isEmpty(chatPartner.fullName)} ? ${chatPartner.fullName.substring(0,1)} : ${chatPartner.username.substring(0,1)}"></span>
         </div>
       </div>
       <div>
         <h2 class="text-lg font-semibold text-white"
-            th:text="${chatPartner.fullName != null} ? ${chatPartner.fullName} : ${chatPartner.username}">Име</h2>
+            th:text="${chatPartner.fullName != null && !#strings.isEmpty(chatPartner.fullName)} ? ${chatPartner.fullName} : ${chatPartner.username}">Име</h2>
       </div>
     </div>
     <div class="w-10"></div>
@@ -46,20 +46,24 @@
        style="scroll-behavior: smooth; padding-bottom:6rem;">
     <div th:each="msg, iterStat : ${messages}"
          th:attr="data-message-id=${msg.id}, id=${iterStat.last} ? 'lastMessage' : null">
+
+
       <div th:if="${msg.sender.username != #authentication.name}" class="flex justify-start px-6">
         <div class="max-w-[60%] px-5 py-3 rounded-2xl bg-gray-800/70 backdrop-blur-sm border border-gray-700/50 text-gray-100 animate-fade-in break-words">
           <p class="text-sm break-words whitespace-pre-wrap" th:text="${msg.messageText}">Съобщение</p>
           <p class="text-xs mt-1 text-gray-400" th:text="${#temporals.format(msg.timestamp, 'HH:mm')}">09:30</p>
-          <p class="text-[10px] mt-1 text-left text-gray-400 seen-status" th:if="${msg.read}" style="display:block;">✓ Видяно</p>
-          <p class="text-[10px] mt-1 text-left text-gray-400 seen-status" th:if="${!msg.read}" style="display:none;">✓ Видяно</p>
+          <p class="text-[10px] mt-1 text-left text-gray-400 seen-status" th:if="${msg.read}" style="display:block;" th:text="#{chat.status.seen}">✓ Видяно</p>
+          <p class="text-[10px] mt-1 text-left text-gray-400 seen-status" th:if="${!msg.read}" style="display:none;" th:text="#{chat.status.seen}">✓ Видяно</p>
         </div>
       </div>
+
+
       <div th:if="${msg.sender.username == #authentication.name}" class="flex justify-end px-6">
         <div class="max-w-[60%] px-5 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 text-white animate-fade-in break-words">
           <p class="text-sm break-words whitespace-pre-wrap" th:text="${msg.messageText}">Съобщение</p>
           <p class="text-xs mt-1 text-blue-100" th:text="${#temporals.format(msg.timestamp, 'HH:mm')}">09:32</p>
-          <p class="text-[10px] mt-1 text-right text-blue-200 seen-status" th:if="${msg.read}" style="display:block;">✓ Видяно</p>
-          <p class="text-[10px] mt-1 text-right text-blue-200 seen-status" th:if="${!msg.read}" style="display:none;">✓ Видяно</p>
+          <p class="text-[10px] mt-1 text-right text-blue-200 seen-status" th:if="${msg.read}" style="display:block;" th:text="#{chat.status.seen}">✓ Видяно</p>
+          <p class="text-[10px] mt-1 text-right text-blue-200 seen-status" th:if="${!msg.read}" style="display:none;" th:text="#{chat.status.seen}">✓ Видяно</p>
         </div>
       </div>
     </div>
@@ -72,13 +76,14 @@
       <input
               type="text"
               name="message"
-              placeholder="Напиши съобщение..."
+              th:placeholder="#{chat.input.placeholder}"
               class="flex-1 px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
       />
       <button
               type="submit"
               class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+              th:text="#{chat.send}"
       >
         Изпрати
       </button>
@@ -93,6 +98,8 @@
   let stompClient = null;
   const username = /*[[${#authentication.name}]]*/ 'user';
   const partnerUsername = /*[[${chatPartner.username}]]*/ 'partner';
+  const seenText = /*[[#{chat.status.seen}]]*/ '✓ Видяно';
+  const connectionErrorText = /*[[#{chat.error.connection}]]*/ 'Няма връзка със сървъра!';
   const shownMessages = new Set();
 
   function connect() {
@@ -101,7 +108,6 @@
     stompClient.debug = null;
 
     stompClient.connect({}, () => {
-      console.log('✅ STOMP connected');
       stompClient.subscribe('/user/queue/messages', (messageOutput) => {
         const msg = JSON.parse(messageOutput.body);
 
@@ -133,7 +139,7 @@
     if (stompClient && stompClient.connected) {
       stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
     } else {
-      alert('Няма връзка със сървъра!');
+      alert(connectionErrorText);
     }
 
     input.value = '';
@@ -152,7 +158,7 @@
     messageElement.setAttribute('data-message-id', msg.id);
 
     const seenHtml = (isSender && msg.read)
-      ? `<p class="text-[10px] mt-1 text-right text-blue-200 seen-status" style="display:block;">✓ Видяно</p>`
+      ? `<p class="text-[10px] mt-1 text-right text-blue-200 seen-status" style="display:block;">${seenText}</p>`
       : '';
 
     messageElement.innerHTML = `
@@ -184,7 +190,7 @@
     } else if (read) {
       const statusElem = document.createElement('p');
       statusElem.className = 'text-[10px] mt-1 text-right text-blue-200 seen-status';
-      statusElem.textContent = '✓ Видяно';
+      statusElem.textContent = seenText;
       messageDiv.querySelector('div').appendChild(statusElem);
     }
   }
@@ -205,20 +211,18 @@
   }
 
   window.addEventListener('load', () => {
-  const container = document.getElementById('messagesContainer');
-  if (!container) return;
+    const container = document.getElementById('messagesContainer');
+    if (!container) return;
 
-  // Малка пауза, за да са рендерирани всички елементи
-  setTimeout(() => {
-    const lastMessage = document.getElementById("lastMessage");
-    if (lastMessage) {
-      lastMessage.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, 50);
+    setTimeout(() => {
+      const lastMessage = document.getElementById("lastMessage");
+      if (lastMessage) {
+        lastMessage.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
 
-  connect();
-});
-
+    connect();
+  });
   /*]]>*/
 </script>
 

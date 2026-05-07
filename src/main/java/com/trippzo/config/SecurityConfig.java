@@ -1,12 +1,13 @@
 package com.trippzo.config;
 
+import com.trippzo.service.UserService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,17 +19,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/ws/**"))
-                .authorizeHttpRequests(authorizeRequests -> {
-                    authorizeRequests.requestMatchers("/static/**", "/css/**", "/js/**", "/img/**").permitAll()
-                            .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                            .requestMatchers("/index", "/login", "/register", "/trips/search").permitAll()
-                            .requestMatchers("/api/**").permitAll().requestMatchers("/ws-chat/**").permitAll()
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Връщаме на стандартно
+                ).authorizeHttpRequests(authorizeRequests -> {
+                    authorizeRequests.requestMatchers("/static/**", "/css/**", "/js/**", "/img/**")
+                            .permitAll().requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+                            .permitAll().requestMatchers("/", "/index", "/login", "/register", "/trips/search")
+                            .permitAll().requestMatchers("/locale").permitAll()
+                            .requestMatchers("/api/**", "/ws-chat/**").permitAll()
+                            .requestMatchers("/chat/unread/count", "/notifications/unread/count").authenticated()
                             .anyRequest().authenticated();
                 }).formLogin(formLogin -> {
                     formLogin.loginPage("/login").usernameParameter("username").passwordParameter("password")
                             .defaultSuccessUrl("/", true).failureUrl("/login?error=true").permitAll();
                 }).logout(logout -> {
-                    logout.logoutUrl("/logout").logoutSuccessUrl("/").invalidateHttpSession(true).permitAll();
+                    logout.logoutUrl("/logout").logoutSuccessUrl("/").invalidateHttpSession(true)
+                            .clearAuthentication(true).deleteCookies("JSESSIONID").permitAll();
                 }).build();
     }
 
@@ -38,9 +43,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
+    public DaoAuthenticationProvider authenticationProvider(UserService userService) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setUserDetailsService(userService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
