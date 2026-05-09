@@ -1,3 +1,14 @@
-# Default ignored files
+/target/
+*.class
+
+.idea/
+*.iml
+/out/
 /shelf/
 /workspace.xml
+
+.env
+.local
+application-local.properties
+
+*.log
