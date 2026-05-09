@@ -2,14 +2,15 @@ package com.trippzo.service;
 
 import com.trippzo.model.Trip;
 import com.trippzo.model.User;
+import com.trippzo.model.dto.TripCreateDTO;
 import com.trippzo.repository.TripRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,46 +23,9 @@ public class TripService {
         this.tripRepository = tripRepository;
     }
 
-    public void saveTrip(Trip trip) {
-        tripRepository.save(trip);
-    }
-
     public Page<Trip> searchTrips(String origin, String destination, String dateString, Pageable pageable) {
-        boolean hasOrigin = origin != null && !origin.isBlank();
-        boolean hasDestination = destination != null && !destination.isBlank();
-        boolean hasDate = dateString != null && !dateString.isBlank();
-
-        LocalDateTime start = LocalDateTime.MIN;
-        LocalDateTime end = LocalDateTime.MAX;
-
-        if (hasDate) {
-            LocalDate date = LocalDate.parse(dateString);
-            start = date.atStartOfDay();
-            end = date.atTime(LocalTime.MAX);
-        }
-
-        if (hasOrigin && hasDestination && hasDate) {
-            return tripRepository
-                    .findByOriginContainingIgnoreCaseAndDestinationContainingIgnoreCaseAndDepartureDateTimeBetween(
-                            origin, destination, start, end, pageable);
-        } else if (hasOrigin && hasDestination) {
-            return tripRepository.findByOriginContainingIgnoreCaseAndDestinationContainingIgnoreCase(origin,
-                    destination, pageable);
-        } else if (hasOrigin && hasDate) {
-            return tripRepository.findByOriginContainingIgnoreCaseAndDepartureDateTimeBetween(origin, start, end,
-                    pageable);
-        } else if (hasDestination && hasDate) {
-            return tripRepository.findByDestinationContainingIgnoreCaseAndDepartureDateTimeBetween(destination, start,
-                    end, pageable);
-        } else if (hasOrigin) {
-            return tripRepository.findByOriginContainingIgnoreCase(origin, pageable);
-        } else if (hasDestination) {
-            return tripRepository.findByDestinationContainingIgnoreCase(destination, pageable);
-        } else if (hasDate) {
-            return tripRepository.findByDepartureDateTimeBetween(start, end, pageable);
-        } else {
-            return tripRepository.findAll(pageable);
-        }
+        Specification<Trip> spec = TripSpecifications.searchTrips(origin, destination, dateString);
+        return tripRepository.findAll(spec, pageable);
     }
 
     public List<Trip> getTripsAsDriver(User user) {
@@ -73,9 +37,7 @@ public class TripService {
     }
 
     public int getTripsByUser(User user) {
-        int driverTrips = getTripsAsDriver(user).size();
-        int passengerTrips = getTripsAsPassenger(user).size();
-        return driverTrips + passengerTrips;
+        return getTripsAsDriver(user).size() + getTripsAsPassenger(user).size();
     }
 
     public Optional<Trip> findById(Long tripId) {
@@ -88,5 +50,25 @@ public class TripService {
 
     public Trip getTripById(Long id) {
         return tripRepository.findById(id).orElse(null);
+    }
+
+    public void createNewTrip(TripCreateDTO tripDto, User driver) {
+        Trip trip = new Trip();
+        trip.setOrigin(tripDto.getOrigin());
+        trip.setDestination(tripDto.getDestination());
+        trip.setCar(tripDto.getCar());
+        trip.setSeatsTotal(tripDto.getSeatsTotal());
+        trip.setDescription(tripDto.getDescription());
+
+        trip.setPricePerSeat(tripDto.getPricePerSeat());
+
+        String dateTimeStr = tripDto.getDepartureDate() + " " + tripDto.getDepartureTime();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+        trip.setDepartureDateTime(LocalDateTime.parse(dateTimeStr, formatter));
+
+        trip.setDriver(driver);
+        trip.setActive(true);
+
+        tripRepository.save(trip);
     }
 }

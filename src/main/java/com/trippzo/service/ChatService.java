@@ -3,6 +3,7 @@ package com.trippzo.service;
 import com.trippzo.model.Message;
 import com.trippzo.model.Trip;
 import com.trippzo.model.User;
+import com.trippzo.model.dto.ChatPartnerDTO;
 import com.trippzo.repository.MessageRepository;
 import com.trippzo.repository.TripRepository;
 import com.trippzo.repository.UserRepository;
@@ -11,10 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatService {
@@ -32,21 +31,21 @@ public class ChatService {
         return messageRepository.findByTripIdOrderByTimestampAsc(tripId);
     }
 
-    public Message saveMessage(Long tripId, String senderUsername, String content, String receiverUsername) {
+    public Message saveMessage(Long tripId, String senderIdentifier, String content, String receiverUsername) {
         Trip trip = null;
         if (tripId != null) {
             trip = tripRepository.findById(tripId).orElse(null);
         }
 
-        Optional<User> senderOpt = userRepository.findByUsername(senderUsername);
-        Optional<User> receiverOpt = userRepository.findByUsername(receiverUsername);
+        User sender = userRepository.findByUsername(senderIdentifier)
+                .orElseGet(() -> userRepository.findByEmail(senderIdentifier).orElse(null));
 
-        if (senderOpt.isEmpty() || receiverOpt.isEmpty()) {
+        User receiver = userRepository.findByUsername(receiverUsername)
+                .orElseGet(() -> userRepository.findByEmail(receiverUsername).orElse(null));
+
+        if (sender == null || receiver == null) {
             return null;
         }
-
-        User sender = senderOpt.get();
-        User receiver = receiverOpt.get();
 
         Message msg = new Message();
         msg.setTrip(trip);
@@ -84,7 +83,7 @@ public class ChatService {
             return "";
         }
         Message last = messages.get(messages.size() - 1);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, HH:mm");
         return last.getTimestamp().format(formatter);
     }
 
@@ -105,6 +104,27 @@ public class ChatService {
         }
 
         messageRepository.saveAll(unreadMessages);
+    }
+
+    public List<ChatPartnerDTO> getSortedChatPartners(String currentUsername, Locale locale) {
+        Set<User> partners = findChatPartners(currentUsername);
+
+        return partners.stream().map(partner -> {
+            int unreadCount = countUnreadMessages(currentUsername, partner.getUsername());
+            ChatPartnerDTO dto = new ChatPartnerDTO(partner, unreadCount);
+
+            List<Message> chat = getChatBetween(currentUsername, partner.getUsername());
+            if (!chat.isEmpty()) {
+                Message last = chat.get(chat.size() - 1);
+                dto.setLastMessage(last.getMessageText());
+                dto.setRawTimestamp(last.getTimestamp());
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, HH:mm", locale);
+                dto.setLastMessageTime(last.getTimestamp().format(formatter));
+            }
+            return dto;
+        }).filter(dto -> dto.getRawTimestamp() != null)
+                .sorted(Comparator.comparing(ChatPartnerDTO::getRawTimestamp).reversed()).collect(Collectors.toList());
     }
 
 }

@@ -1,6 +1,5 @@
 package com.trippzo.controller;
 
-import com.trippzo.config.CustomUserDetails;
 import com.trippzo.model.Review;
 import com.trippzo.model.Trip;
 import com.trippzo.model.User;
@@ -20,7 +19,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/reviews")
-public class ReviewController {
+public class ReviewController extends BaseController {
 
     @Autowired
     private ReviewService reviewService;
@@ -30,8 +29,13 @@ public class ReviewController {
 
     @PostMapping("/{tripId}/add")
     public String addReview(@PathVariable Long tripId, @RequestParam int rating,
-            @RequestParam(required = false) String comment, @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) String comment, @AuthenticationPrincipal Object principal,
             RedirectAttributes redirectAttributes) {
+
+        User currentUser = resolveUser(principal);
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
 
         Optional<Trip> tripOptional = tripService.findById(tripId);
         if (tripOptional.isEmpty()) {
@@ -40,7 +44,6 @@ public class ReviewController {
         }
 
         Trip trip = tripOptional.get();
-        User currentUser = userDetails.getUser();
 
         if (reviewService.hasUserReviewedTrip(tripId, currentUser.getId())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Вече сте оценили това пътуване.");
@@ -66,8 +69,13 @@ public class ReviewController {
     }
 
     @PostMapping("/{reviewId}/delete")
-    public String deleteReview(@PathVariable Long reviewId, @AuthenticationPrincipal CustomUserDetails userDetails,
+    public String deleteReview(@PathVariable Long reviewId, @AuthenticationPrincipal Object principal,
             RedirectAttributes redirectAttributes) {
+
+        User currentUser = resolveUser(principal);
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
 
         Optional<Review> reviewOptional = reviewService.getReviewById(reviewId);
         if (reviewOptional.isEmpty()) {
@@ -77,7 +85,7 @@ public class ReviewController {
 
         Review review = reviewOptional.get();
 
-        if (!review.getReviewer().getId().equals(userDetails.getUser().getId())) {
+        if (!review.getReviewer().getId().equals(currentUser.getId())) {
             redirectAttributes.addFlashAttribute("errorMessage", "Нямате право да изтриете тази оценка.");
             return "redirect:/profile";
         }

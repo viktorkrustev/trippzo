@@ -3,8 +3,8 @@ package com.trippzo.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,45 +18,42 @@ public class Trip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false)
     private String origin;
 
     @Column(nullable = false)
     private String destination;
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Message> messages;
-
-    @Transient
-    private String departureDate;
-
-    @Transient
-    private String departureTime;
-
     @Column(nullable = false)
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime departureDateTime;
 
     @Column(nullable = false)
     private Integer seatsTotal;
 
-    @Column(length = 100)
+    @Column(nullable = false)
+    private BigDecimal pricePerSeat;
+
     private String car;
-
-    @Column
-    private String stops;
-
-    @Column(length = 1000)
     private String description;
 
-    @ManyToOne
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id", nullable = false)
     private User driver;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Message> messages;
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TripPassenger> passengers;
 
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications;
+
+    @OneToMany(mappedBy = "trip")
+    private List<Review> reviews;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

@@ -19,19 +19,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/ws/**"))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Връщаме на стандартно
-                ).authorizeHttpRequests(authorizeRequests -> {
-                    authorizeRequests.requestMatchers("/static/**", "/css/**", "/js/**", "/img/**")
-                            .permitAll().requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                            .permitAll().requestMatchers("/", "/index", "/login", "/register", "/trips/search")
-                            .permitAll().requestMatchers("/locale").permitAll()
-                            .requestMatchers("/api/**", "/ws-chat/**").permitAll()
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .authorizeHttpRequests(authorizeRequests -> {
+                    authorizeRequests.requestMatchers("/static/**", "/css/**", "/js/**", "/img/**").permitAll()
+                            .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                            .requestMatchers("/", "/index", "/login", "/register", "/trips/search", "/locale")
+                            .permitAll().requestMatchers("/api/**", "/ws-chat/**").permitAll()
                             .requestMatchers("/chat/unread/count", "/notifications/unread/count").authenticated()
                             .anyRequest().authenticated();
                 }).formLogin(formLogin -> {
-                    formLogin.loginPage("/login").usernameParameter("username").passwordParameter("password")
+                    formLogin.loginPage("/login").usernameParameter("email").passwordParameter("password")
                             .defaultSuccessUrl("/", true).failureUrl("/login?error=true").permitAll();
-                }).logout(logout -> {
+                }).oauth2Login(oauth2 -> oauth2.loginPage("/login").defaultSuccessUrl("/oauth2/success", true))
+                .logout(logout -> {
                     logout.logoutUrl("/logout").logoutSuccessUrl("/").invalidateHttpSession(true)
                             .clearAuthentication(true).deleteCookies("JSESSIONID").permitAll();
                 }).build();

@@ -1,12 +1,10 @@
 package com.trippzo.controller;
 
-import com.trippzo.config.CustomUserDetails;
 import com.trippzo.model.Review;
 import com.trippzo.model.User;
 import com.trippzo.service.CloudinaryService;
 import com.trippzo.service.ReviewService;
 import com.trippzo.service.TripService;
-import com.trippzo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -22,10 +20,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/profile")
-public class ProfileController {
-
-    @Autowired
-    private UserService userService;
+public class ProfileController extends BaseController {
 
     @Autowired
     private TripService tripService;
@@ -36,10 +31,13 @@ public class ProfileController {
     @Autowired
     private CloudinaryService cloudinaryService;
 
-
     @GetMapping
-    public String profilePage(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        User user = userDetails.getUser();
+    public String profilePage(@AuthenticationPrincipal Object principal, Model model) {
+        User user = resolveUser(principal);
+
+        if (user == null) {
+            return "redirect:/login";
+        }
 
         model.addAttribute("user", user);
         model.addAttribute("totalTrips", tripService.getTripsByUser(user));
@@ -56,32 +54,33 @@ public class ProfileController {
     }
 
     @PostMapping("/edit")
-    public String editProfile(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String fullName,
+    public String editProfile(@AuthenticationPrincipal Object principal, @RequestParam String fullName,
             @RequestParam String email) {
-        User user = userDetails.getUser();
-        user.setFullName(fullName);
-        user.setEmail(email);
-        userService.saveUser(user);
+        User user = resolveUser(principal);
+        if (user != null) {
+            user.setFullName(fullName);
+            user.setEmail(email);
+            userService.saveUser(user);
+        }
         return "redirect:/profile";
     }
 
     @PostMapping("/upload-avatar")
-    public String uploadAvatar(@RequestParam("avatar") MultipartFile file,
-                               @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
+    public String uploadAvatar(@RequestParam("avatar") MultipartFile file, @AuthenticationPrincipal Object principal)
+            throws IOException {
 
         if (file.isEmpty()) {
             return "redirect:/profile?error=empty";
         }
 
-        // 1. Качваме в облака
-        String imageUrl = cloudinaryService.uploadImage(file);
+        User user = resolveUser(principal);
+        if (user != null) {
+            String imageUrl = cloudinaryService.uploadImage(file);
 
-        // 2. Взимаме потребителя и обновяваме URL-а
-        User user = userDetails.getUser();
-        user.setAvatarUrl(imageUrl);
-        userService.saveUser(user);
+            user.setAvatarUrl(imageUrl);
+            userService.saveUser(user);
+        }
 
         return "redirect:/profile";
     }
-
 }

@@ -113,7 +113,7 @@
     <div th:each="trip : ${trips}"
          class="glass soft rounded-2xl p-6 card-hover">
 
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex justify-between items-start mb-4">
 
             <div class="text-xl font-bold">
                 <span th:text="${trip.origin}"></span>
@@ -121,9 +121,15 @@
                 <span th:text="${trip.destination}"></span>
             </div>
 
-            <a th:href="@{'/trips/' + ${trip.id}}"
-               class="bg-white text-black px-5 py-2 rounded-xl font-semibold"
-               th:text="#{search.details}"></a>
+            <div class="text-right">
+                <div class="text-2xl font-black text-white mb-1">
+                    <span th:text="${#numbers.formatDecimal(trip.pricePerSeat, 1, 2)}"></span>
+                    <span class="text-xs font-normal text-white/50">€</span>
+                </div>
+                <a th:href="@{'/trips/' + ${trip.id}}"
+                   class="inline-block bg-white text-black px-5 py-2 rounded-xl font-semibold text-sm hover:bg-gray-200 transition"
+                   th:text="#{search.details}"></a>
+            </div>
 
         </div>
 

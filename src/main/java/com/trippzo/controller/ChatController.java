@@ -15,13 +15,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.security.Principal;
 import java.util.List;
-import java.util.Set;
+import java.util.Locale;
 
 @Controller
 @RequestMapping("/chat")
-public class ChatController {
+public class ChatController extends BaseController {
 
     private final ChatService chatService;
     private final UserService userService;
@@ -33,49 +32,34 @@ public class ChatController {
     }
 
     @GetMapping
-    public String showInbox(Model model, Principal principal) {
-        String currentUsername = principal.getName();
+    public String showInbox(Model model, @AuthenticationPrincipal Object principal, Locale locale) {
+        User currentUser = resolveUser(principal);
+        if (currentUser == null)
+            return "redirect:/login";
 
-        Set<User> chatPartners = chatService.findChatPartners(currentUsername);
+        String currentUsername = currentUser.getUsername();
 
-        List<ChatPartnerDTO> partnerDtos = chatPartners.stream().map(partner -> {
-            int unreadCount = chatService.countUnreadMessages(currentUsername, partner.getUsername());
-
-            String lastMessageTime = chatService.getLastMessageTime(currentUsername, partner.getUsername());
-            String lastMessage = chatService.getLastMessageContent(currentUsername, partner.getUsername());
-
-            ChatPartnerDTO dto = new ChatPartnerDTO(partner, unreadCount);
-            dto.setLastMessageTime(lastMessageTime);
-            dto.setLastMessage(lastMessage);
-            dto.setAvatarUrl(partner.getAvatarUrl());
-
-            return dto;
-        }).sorted((a, b) -> {
-            // null-safe sort (най-новите първи)
-            if (a.getLastMessageTime() == null)
-                return 1;
-            if (b.getLastMessageTime() == null)
-                return -1;
-
-            return b.getLastMessageTime().compareTo(a.getLastMessageTime());
-        }).toList();
+        List<ChatPartnerDTO> partnerDtos = chatService.getSortedChatPartners(currentUsername, locale);
 
         model.addAttribute("chatPartners", partnerDtos);
+        model.addAttribute("currentUsername", currentUsername);
         return "chat-inbox";
     }
 
     @GetMapping("/{username}")
-    public String showChat(@PathVariable String username, Model model, Principal principal) {
-        String currentUsername = principal.getName();
+    public String showChat(@PathVariable String username, Model model, @AuthenticationPrincipal Object principal) {
+        User currentUser = resolveUser(principal);
+        if (currentUser == null)
+            return "redirect:/login";
 
-        chatService.markMessagesAsRead(username, currentUsername);
+        chatService.markMessagesAsRead(username, currentUser.getUsername());
 
-        List<Message> messages = chatService.getChatBetween(currentUsername, username);
+        List<Message> messages = chatService.getChatBetween(currentUser.getUsername(), username);
         User chatPartner = userService.findByUsername(username);
 
         model.addAttribute("messages", messages);
         model.addAttribute("chatPartner", chatPartner);
-
+        model.addAttribute("currentUsername", currentUser.getUsername()); // Подаваме реалния username
         return "chat-window";
     }
 
@@ -86,7 +70,6 @@ public class ChatController {
         if (user == null) {
             return 0;
         }
-
         return chatService.countAllUnreadMessages(user.getUsername());
     }
 }

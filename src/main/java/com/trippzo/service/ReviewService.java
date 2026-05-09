@@ -1,11 +1,11 @@
 package com.trippzo.service;
 
 import com.trippzo.model.Review;
-import com.trippzo.model.User;
 import com.trippzo.repository.ReviewRepository;
 import com.trippzo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,17 +21,9 @@ public class ReviewService {
     @Autowired
     private UserRepository userRepository;
 
+    @Transactional
     public Review saveReview(Review review) {
-        Review savedReview = reviewRepository.save(review);
-
-        User driver = review.getReviewee();
-
-        int current = driver.getTotalReviews();
-        driver.setTotalReviews(current + 1);
-
-        userRepository.save(driver);
-
-        return savedReview;
+        return reviewRepository.save(review);
     }
 
     public List<Review> getReviewsForDriver(Long driverId) {
@@ -70,6 +62,7 @@ public class ReviewService {
         return reviewRepository.existsByTripIdAndReviewerId(tripId, reviewerId);
     }
 
+    @Transactional
     public void deleteReview(Long reviewId) {
         reviewRepository.deleteById(reviewId);
     }

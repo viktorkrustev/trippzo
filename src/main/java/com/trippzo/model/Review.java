@@ -16,7 +16,7 @@ public class Review {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "trip_id", nullable = false)
+    @JoinColumn(name = "trip_id", nullable = true)
     private Trip trip;
 
     @ManyToOne
@@ -27,11 +27,7 @@ public class Review {
     @JoinColumn(name = "reviewee_id", nullable = false)
     private User reviewee;
 
-    @Column(nullable = false)
     private int rating;
-
-    @Column(columnDefinition = "TEXT")
     private String comment;
-
     private LocalDateTime createdAt = LocalDateTime.now();
 }

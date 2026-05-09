@@ -1,8 +1,12 @@
 package com.trippzo.controller;
 
-import com.trippzo.config.CustomUserDetails;
 import com.trippzo.model.*;
-import com.trippzo.service.*;
+import com.trippzo.model.dto.TripCreateDTO;
+import com.trippzo.service.ChatService;
+import com.trippzo.service.NotificationService;
+import com.trippzo.service.ReviewService;
+import com.trippzo.service.TripService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,24 +15,17 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
 @Controller
-public class TripController {
+public class TripController extends BaseController {
 
     @Autowired
     private TripService tripService;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private ChatService chatService;
@@ -41,30 +38,30 @@ public class TripController {
 
     @GetMapping("/trips/create")
     public String showCreateForm(Model model) {
-        model.addAttribute("trip", new Trip());
+        model.addAttribute("tripDto", new TripCreateDTO());
         return "trip-create";
     }
 
     @PostMapping("/trips/create")
-    public String createTrip(@Validated @ModelAttribute("trip") Trip trip, BindingResult bindingResult, Model model,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public String createTrip(@Valid @ModelAttribute("tripDto") TripCreateDTO tripDto, BindingResult bindingResult,
+            @AuthenticationPrincipal Object principal) {
 
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-            String dateTimeString = trip.getDepartureDate() + " " + trip.getDepartureTime();
-            LocalDateTime departureDateTime = LocalDateTime.parse(dateTimeString, formatter);
-            trip.setDepartureDateTime(departureDateTime);
-        } catch (DateTimeParseException e) {
-            bindingResult.rejectValue("departureDate", "error.trip", "Невалидна дата или час.");
+        User user = resolveUser(principal);
+        if (user == null) {
+            return "redirect:/login";
         }
 
         if (bindingResult.hasErrors()) {
             return "trip-create";
         }
 
-        User currentUser = customUserDetails.getUser();
-        trip.setDriver(currentUser);
-        tripService.saveTrip(trip);
+        try {
+            tripService.createNewTrip(tripDto, user);
+        } catch (RuntimeException e) {
+            bindingResult.rejectValue("departureDate", "error.trip", e.getMessage());
+            return "trip-create";
+        }
+
         return "redirect:/";
     }
 
@@ -86,11 +83,9 @@ public class TripController {
         }
 
         model.addAttribute("trips", tripPage.getContent());
-        model.addAttribute("driverRatings", driverRatings); // Изпращаме мапа към Thymeleaf
+        model.addAttribute("driverRatings", driverRatings);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", tripPage.getTotalPages());
-
-        // Запазваме параметрите за филтриране
         model.addAttribute("from", from);
         model.addAttribute("to", to);
         model.addAttribute("date", date);
@@ -99,11 +94,15 @@ public class TripController {
     }
 
     @GetMapping("/trips/{id}")
-    public String viewTrip(@PathVariable Long id, Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public String viewTrip(@PathVariable Long id, Model model, @AuthenticationPrincipal Object principal) {
         Trip trip = tripService.getTripById(id);
         if (trip == null) {
             return "redirect:/trips/search";
         }
+
+        User currentUser = resolveUser(principal);
+        boolean isDriver = currentUser != null && trip.getDriver().getId().equals(currentUser.getId());
+
         List<Message> messages = chatService.getMessagesForTrip(id);
         int seatsAvailable = trip.getSeatsTotal() - (trip.getPassengers() != null ? trip.getPassengers().size() : 0);
         List<Review> reviews = reviewService.getReviewsForTrip(id);
@@ -111,21 +110,27 @@ public class TripController {
         int reviewCount = reviewService.getReviewCountForDriver(trip.getDriver().getId());
 
         model.addAttribute("trip", trip);
+        model.addAttribute("isDriver", isDriver); // Важно за HTML-а
         model.addAttribute("messages", messages);
         model.addAttribute("seatsAvailable", seatsAvailable);
-        model.addAttribute("currentUsername", userDetails.getUsername());
+        model.addAttribute("currentUsername", currentUser != null ? currentUser.getUsername() : null);
         model.addAttribute("reviews", reviews);
         model.addAttribute("driverRating", driverRating);
         model.addAttribute("reviewCount", reviewCount);
         model.addAttribute("driverLevel", trip.getDriver().getDriverLevel());
-        model.addAttribute("hasReviewed", reviewService.hasUserReviewedTrip(id, userDetails.getUser().getId()));
+        model.addAttribute("hasReviewed",
+                currentUser != null && reviewService.hasUserReviewedTrip(id, currentUser.getId()));
 
-        Optional<Notification> seatRequest = notificationService.findSeatRequestNotification(id,
-                userDetails.getUser().getId());
-        if (seatRequest.isPresent()) {
-            Notification notification = seatRequest.get();
-            model.addAttribute("seatRequestStatus", notification.getStatus());
-            model.addAttribute("hasSeatRequest", true);
+        if (currentUser != null) {
+            Optional<Notification> seatRequest = notificationService.findSeatRequestNotification(id,
+                    currentUser.getId());
+            if (seatRequest.isPresent()) {
+                Notification notification = seatRequest.get();
+                model.addAttribute("seatRequestStatus", notification.getStatus());
+                model.addAttribute("hasSeatRequest", true);
+            } else {
+                model.addAttribute("hasSeatRequest", false);
+            }
         } else {
             model.addAttribute("hasSeatRequest", false);
         }
@@ -135,29 +140,53 @@ public class TripController {
 
     @PostMapping("/trips/{id}/chat")
     public String sendMessage(@PathVariable Long id, @RequestParam String message,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        User sender = userDetails.getUser();
+            @AuthenticationPrincipal Object principal) {
+        User sender = resolveUser(principal);
+        if (sender == null) {
+            return "redirect:/login";
+        }
+
         Trip trip = tripService.getTripById(id);
 
         if (trip == null || trip.getDriver() == null) {
             return "redirect:/trips/" + id + "#chat-box";
         }
 
-        String receiverUsername = trip.getDriver().getUsername();
+        if (trip.getDriver().getId().equals(sender.getId())) {
+            return "redirect:/trips/" + id;
+        }
 
+        String receiverUsername = trip.getDriver().getUsername();
         chatService.saveMessage(id, sender.getUsername(), message, receiverUsername);
         return "redirect:/trips/" + id + "#chat-box";
     }
 
     @PostMapping("/trips/{tripId}/book")
-    public String requestSeat(@PathVariable("tripId") Long tripId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public String requestSeat(@PathVariable("tripId") Long tripId, @AuthenticationPrincipal Object principal,
+            RedirectAttributes redirectAttributes) {
+        User passenger = resolveUser(principal);
+        if (passenger == null) {
+            return "redirect:/login";
+        }
+
         Trip trip = tripService.getTripById(tripId);
+
         if (trip == null) {
             return "redirect:/trips/search";
         }
 
-        User passenger = userDetails.getUser();
+        if (trip.getDriver().getId().equals(passenger.getId())) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Не можете да запазвате място в собственото си пътуване.");
+            return "redirect:/trips/" + tripId;
+        }
+
+        Optional<Notification> existingRequest = notificationService.findSeatRequestNotification(tripId,
+                passenger.getId());
+        if (existingRequest.isPresent()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Вече сте изпратили заявка за това пътуване.");
+            return "redirect:/trips/" + tripId;
+        }
 
         notificationService.createSeatRequestNotification(trip, passenger);
 
@@ -165,14 +194,18 @@ public class TripController {
     }
 
     @PostMapping("/trips/{tripId}/delete")
-    public String deleteTrip(@PathVariable Long tripId, @AuthenticationPrincipal CustomUserDetails userDetails,
+    public String deleteTrip(@PathVariable Long tripId, @AuthenticationPrincipal Object principal,
             RedirectAttributes redirectAttributes) {
+        User user = resolveUser(principal);
+        if (user == null) {
+            return "redirect:/login";
+        }
 
         Optional<Trip> optionalTrip = tripService.findById(tripId);
         if (optionalTrip.isPresent()) {
             Trip trip = optionalTrip.get();
 
-            if (trip.getDriver().getId().equals(userDetails.getUser().getId())) {
+            if (trip.getDriver().getId().equals(user.getId())) {
                 tripService.deleteTrip(trip);
                 redirectAttributes.addFlashAttribute("successMessage", "Пътуването е изтрито успешно.");
             } else {
