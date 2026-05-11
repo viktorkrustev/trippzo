@@ -73,7 +73,10 @@
         </div>
         <div class="flex flex-col">
           <span class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold" th:text="#{nav.welcome}">Здравей,</span>
-          <span class="text-sm font-bold text-white" th:text="${#authentication.name}">Потребител</span>
+          <span class="text-sm font-bold text-white"
+                th:text="${#authentication.principal instanceof T(com.trippzo.config.CustomUserDetails) ? #authentication.principal.user.fullName : #authentication.name}">
+              Потребител
+          </span>
         </div>
       </div>
       <button id="closeMenuBtn" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-zinc-400">✕</button>

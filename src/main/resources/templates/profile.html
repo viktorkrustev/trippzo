@@ -155,60 +155,58 @@
 
       <div class="glass rounded-3xl p-6 soft">
 
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold" th:text="#{profile.trips}"></h3>
+        <div class="flex justify-between items-center mb-6 cursor-pointer" onclick="toggleTrips()">
+          <div class="flex items-center gap-2">
+            <h3 class="text-xl font-bold" th:text="#{profile.trips}">Моите пътувания</h3>
+            <span id="tripsArrow" class="text-xs transition-transform duration-300">▼</span>
+          </div>
 
           <a href="/trips/create"
+             onclick="event.stopPropagation()"
              class="bg-white text-black px-4 py-2 rounded-xl text-sm font-semibold"
              th:text="'➕ ' + #{profile.newTrip}">
           </a>
         </div>
 
-        <div class="space-y-3">
+        <div id="tripsList" class="hidden space-y-3">
 
           <div th:each="trip : ${driverTrips}"
                class="card glass rounded-xl p-4 flex justify-between items-center">
-
             <div>
               <p class="text-white/50 text-xs" th:text="#{profile.driver}"></p>
               <p th:text="${trip.origin + ' → ' + trip.destination}"></p>
             </div>
-
             <div class="flex items-center gap-3">
-
               <a th:href="@{'/trips/' + ${trip.id}}"
                  class="text-blue-400 text-sm"
                  th:text="#{profile.view}">
               </a>
-
-              <form th:action="@{'/trips/' + ${trip.id} + '/delete'}"
-                    method="post">
+              <form th:action="@{'/trips/' + ${trip.id} + '/delete'}" method="post">
                 <button class="danger text-xs border border-white/10 px-3 py-1 rounded-lg"
                         th:text="#{profile.delete}">
                 </button>
               </form>
-
             </div>
-
           </div>
 
           <div th:each="trip : ${passengerTrips}"
-               class="card glass rounded-xl p-4 flex justify-between">
-
+               class="card glass rounded-xl p-4 flex justify-between items-center">
             <div>
               <p class="text-white/50 text-xs" th:text="#{profile.passenger}"></p>
               <p th:text="${trip.origin + ' → ' + trip.destination}"></p>
             </div>
-
             <a th:href="@{'/trips/' + ${trip.id}}"
                class="text-blue-400 text-sm"
                th:text="#{profile.view}">
             </a>
+          </div>
 
+          <div th:if="${driverTrips.isEmpty() && passengerTrips.isEmpty()}"
+               class="text-white/40 text-center py-4 italic text-sm">
+            Нямате записани пътувания.
           </div>
 
         </div>
-
       </div>
 
       <div class="glass rounded-3xl p-6 soft">
@@ -261,6 +259,14 @@
     document.getElementById("reviews").classList.toggle("hidden");
     document.getElementById("arrow").classList.toggle("rotate-180");
   }
+
+  function toggleTrips() {
+  const list = document.getElementById("tripsList");
+  const arrow = document.getElementById("tripsArrow");
+
+  list.classList.toggle("hidden");
+  arrow.classList.toggle("rotate-180");
+}
 </script>
 
 </body>

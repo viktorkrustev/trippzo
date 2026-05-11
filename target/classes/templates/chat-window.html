@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="${chatPartner.username} + ' | ' + #{chat.title.suffix}"></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    #messagesContainer::-webkit-scrollbar {
+      display: none;
+    }
+
+    #messagesContainer {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+
+<body class="bg-black text-white min-h-screen flex flex-col relative">
+
+<div class="sticky top-0 z-20 bg-gray-800/30 backdrop-blur-sm border-b border-gray-700/50">
+  <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+
+    <a href="/chat"
+       class="text-gray-400 hover:text-white transition-colors duration-200"
+       th:text="#{chat.back}">
+    </a>
+
+    <div class="flex items-center gap-3">
+
+      <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-700 flex items-center justify-center text-white font-bold text-sm uppercase">
+
+        <img th:if="${chatPartner.avatarUrl != null}"
+             th:src="@{${chatPartner.avatarUrl}}"
+             alt="Avatar"
+             class="w-full h-full object-cover"/>
+
+        <div th:if="${chatPartner.avatarUrl == null}"
+             class="w-full h-full bg-blue-600 flex items-center justify-center text-white font-bold">
+
+          <span th:text="${chatPartner.fullName != null && !#strings.isEmpty(chatPartner.fullName)}
+                         ? ${chatPartner.fullName.substring(0,1)}
+                         : ${chatPartner.username.substring(0,1)}">
+          </span>
+
+        </div>
+
+      </div>
+
+      <div>
+
+        <h2 class="text-lg font-semibold text-white"
+            th:text="${chatPartner.fullName != null && !#strings.isEmpty(chatPartner.fullName)}
+                     ? ${chatPartner.fullName}
+                     : ${chatPartner.username}">
+        </h2>
+
+      </div>
+
+    </div>
+
+    <div class="w-10"></div>
+
+  </div>
+</div>
+
+<div class="relative z-10 flex-1 overflow-hidden">
+
+  <div id="messagesContainer"
+       class="max-w-4xl mx-auto px-4 py-6 space-y-4 overflow-y-auto"
+       style="height: calc(100vh - 170px); padding-bottom: 2rem;">
+
+    <div th:each="msg : ${messages}"
+         th:attr="data-message-id=${msg.id}">
+
+      <!-- RECEIVED -->
+
+      <div th:if="${msg.sender.username != currentUsername}"
+           class="flex justify-start px-6 mb-4">
+
+        <div class="max-w-[70%] px-5 py-3 rounded-2xl bg-gray-800/70 backdrop-blur-sm border border-gray-700/50 text-gray-100 animate-fade-in break-words">
+
+          <p class="text-sm break-words whitespace-pre-wrap"
+             th:text="${msg.messageText}">
+          </p>
+
+          <div class="flex items-center gap-2 mt-1">
+
+            <p class="text-[10px] text-gray-400"
+               th:text="${#temporals.format(msg.timestamp, 'HH:mm')}">
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- SENT -->
+
+      <div th:if="${msg.sender.username == currentUsername}"
+           class="flex justify-end px-6 mb-4">
+
+        <div class="max-w-[70%] px-5 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 text-white animate-fade-in break-words shadow-lg shadow-blue-500/10">
+
+          <p class="text-sm break-words whitespace-pre-wrap"
+             th:text="${msg.messageText}">
+          </p>
+
+          <div class="flex items-center justify-end gap-2 mt-1">
+
+            <p class="text-[10px] text-blue-100"
+               th:text="${#temporals.format(msg.timestamp, 'HH:mm')}">
+            </p>
+
+            <p class="text-[10px] text-blue-200 seen-status"
+               th:style="${msg.read} ? 'display:block;' : 'display:none;'"
+               th:text="#{chat.status.seen}">
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div id="scrollAnchor"></div>
+
+  </div>
+
+</div>
+
+<div class="sticky bottom-0 z-20 bg-gray-800/30 backdrop-blur-sm border-t border-gray-700/50">
+
+  <div class="max-w-4xl mx-auto px-4 py-4">
+
+    <form id="chatForm"
+          class="flex gap-3"
+          onsubmit="sendMessage(event)">
+
+      <input
+              type="text"
+              name="message"
+              id="messageInput"
+              th:placeholder="#{chat.input.placeholder}"
+              class="flex-1 px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              required
+              autocomplete="off"
+      />
+
+      <button
+              type="submit"
+              class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:opacity-90 active:scale-95 transition-all duration-200 font-medium"
+              th:text="#{chat.send}">
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+<audio id="notificationSound"
+       src="/sounds/notification.mp3"
+       preload="auto">
+</audio>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+
+  let stompClient = null;
+
+  const username = /*[[${currentUsername}]]*/ '';
+  const partnerUsername = /*[[${chatPartner.username}]]*/ '';
+  const seenText = /*[[#{chat.status.seen}]]*/ '';
+  const connectionErrorText = /*[[#{chat.error.connection}]]*/ '';
+
+  const shownMessages = new Set();
+
+  function scrollToBottom(smooth = false) {
+
+    const container = document.getElementById('messagesContainer');
+
+    if (!container) return;
+
+    requestAnimationFrame(() => {
+
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+
+    });
+  }
+
+  function connect() {
+
+    const socket = new SockJS('/ws-chat');
+
+    stompClient = Stomp.over(socket);
+
+    stompClient.debug = null;
+
+    stompClient.connect({}, () => {
+
+      stompClient.subscribe('/user/queue/messages', (messageOutput) => {
+
+        const msg = JSON.parse(messageOutput.body);
+
+        if (shownMessages.has(msg.id)) {
+
+          updateReadStatus(msg.id, msg.read);
+
+        } else {
+
+          showMessage(msg);
+
+          if (msg.sender.username !== username) {
+
+            playNotificationSound();
+          }
+        }
+
+      });
+
+    }, () => {
+
+      setTimeout(connect, 5000);
+
+    });
+  }
+
+  function sendMessage(event) {
+
+    event.preventDefault();
+
+    const input = document.getElementById('messageInput');
+
+    const text = input.value.trim();
+
+    if (!text || !stompClient || !stompClient.connected) {
+
+      if (stompClient && !stompClient.connected) {
+
+        alert(connectionErrorText);
+      }
+
+      return;
+    }
+
+    const chatMessage = {
+      tripId: null,
+      content: text,
+      receiverUsername: partnerUsername
+    };
+
+    try {
+
+      stompClient.send(
+        "/app/chat.sendMessage",
+        {},
+        JSON.stringify(chatMessage)
+      );
+
+      input.value = '';
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+  }
+
+  function showMessage(msg) {
+
+    if (shownMessages.has(msg.id)) return;
+
+    shownMessages.add(msg.id);
+
+    const container = document.getElementById('messagesContainer');
+
+    const isSender = msg.sender.username === username;
+
+    const time = new Date(msg.timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const messageElement = document.createElement('div');
+
+    messageElement.className =
+      `flex ${isSender ? 'justify-end' : 'justify-start'} px-6 animate-fade-in mb-4`;
+
+    messageElement.setAttribute('data-message-id', msg.id);
+
+    const contentClass = isSender
+      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/10'
+      : 'bg-gray-800/70 border border-gray-700/50 text-gray-100';
+
+    const seenHtml = isSender
+      ? `<p class="text-[10px] text-blue-200 seen-status"
+             style="display:${msg.read ? 'block' : 'none'}">
+             ${seenText}
+         </p>`
+      : '';
+
+    messageElement.innerHTML = `
+
+      <div class="max-w-[70%] px-5 py-3 rounded-2xl break-words ${contentClass}">
+
+        <p class="text-sm whitespace-pre-wrap break-words">
+          ${escapeHtml(msg.messageText)}
+        </p>
+
+        <div class="flex items-center ${isSender ? 'justify-end' : 'justify-start'} gap-2 mt-1">
+
+          <p class="text-[10px] ${isSender ? 'text-blue-100' : 'text-gray-400'}">
+            ${time}
+          </p>
+
+          ${seenHtml}
+
+        </div>
+
+      </div>
+    `;
+
+    const anchor = document.getElementById('scrollAnchor');
+
+    container.insertBefore(messageElement, anchor);
+
+    scrollToBottom(true);
+  }
+
+  function updateReadStatus(messageId, read) {
+
+    const messageDiv = document.querySelector(
+      `[data-message-id="${messageId}"]`
+    );
+
+    if (messageDiv && read) {
+
+      const seenStatus = messageDiv.querySelector('.seen-status');
+
+      if (seenStatus) {
+
+        seenStatus.style.display = 'block';
+      }
+    }
+  }
+
+  function playNotificationSound() {
+
+    const audio = document.getElementById('notificationSound');
+
+    if (audio) {
+
+      audio.play().catch(() => {});
+    }
+  }
+
+  function escapeHtml(text) {
+
+    const div = document.createElement('div');
+
+    div.textContent = text;
+
+    return div.innerHTML;
+  }
+
+  window.addEventListener('load', () => {
+
+    document.querySelectorAll('[data-message-id]').forEach(el => {
+
+      const id = parseInt(el.getAttribute('data-message-id'));
+
+      if (!isNaN(id)) {
+
+        shownMessages.add(id);
+      }
+    });
+
+    setTimeout(() => {
+      scrollToBottom(false);
+    }, 100);
+
+    setTimeout(() => {
+      scrollToBottom(false);
+    }, 300);
+
+    setTimeout(() => {
+      scrollToBottom(false);
+    }, 600);
+
+    connect();
+  });
+
+  /*]]>*/
+</script>
+
+</body>
+</html>

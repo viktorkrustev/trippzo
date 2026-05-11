@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="#{register.title}">Регистрация | Trippzo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex flex-col">
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+  <div class="absolute top-1/4 left-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-1/4 right-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+</div>
+
+<div class="relative z-10 flex justify-center items-center flex-1 px-4 py-12 sm:py-20">
+  <div class="w-full max-w-xl sm:max-w-2xl space-y-8" data-aos="fade-up">
+
+    <div class="text-center">
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white" th:text="#{register.hero.title}">
+        Създайте акаунт
+      </h2>
+      <p class="mt-2 text-gray-400 text-sm sm:text-base" th:text="#{register.hero.subtitle}">
+        Присъединете се към Trippzo общността
+      </p>
+    </div>
+
+    <div class="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 sm:p-10 shadow-xl">
+
+      <div th:if="${error}" class="text-red-400 text-sm mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+        <p th:text="${error}"></p>
+      </div>
+
+      <form th:action="@{/register}" th:object="${userDto}" method="post" class="space-y-6">
+
+        <div>
+          <label for="fullName" class="block text-sm font-medium text-gray-300 mb-2" th:text="#{register.fullName.label}">Пълно име</label>
+          <input id="fullName" th:field="*{fullName}" type="text"
+                 class="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white" />
+          <p th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-red-400 text-xs mt-1"></p>
+        </div>
+
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-300 mb-2" th:text="#{register.username.label}">Потребителско име</label>
+          <input id="username" th:field="*{username}" type="text"
+                 class="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white" />
+          <p th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-red-400 text-xs mt-1"></p>
+        </div>
+
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-300 mb-2" th:text="#{register.email.label}">Имейл</label>
+          <input id="email" th:field="*{email}" type="email"
+                 class="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white" />
+          <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-red-400 text-xs mt-1"></p>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-300 mb-2" th:text="#{register.password.label}">Парола</label>
+          <input id="password" th:field="*{password}" type="password"
+                 class="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white" />
+          <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-red-400 text-xs mt-1"></p>
+        </div>
+
+        <div>
+          <label for="confirmPassword" class="block text-sm font-medium text-gray-300 mb-2" th:text="#{register.confirmPassword.label}">Потвърди парола</label>
+          <input id="confirmPassword" th:field="*{confirmPassword}" type="password"
+                 class="w-full px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white" />
+          <p th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-red-400 text-xs mt-1"></p>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-white text-black font-semibold rounded-lg">Регистрация</button>
+      </form>
+
+      <div class="relative py-6">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-700"></div>
+        </div>
+        <div class="relative flex justify-center text-xs uppercase">
+          <span class="bg-[#111827] px-2 text-gray-500" th:text="#{login.or_continue_with}">
+            Или продължи с
+          </span>
+        </div>
+      </div>
+
+      <a th:href="@{/oauth2/authorization/google}"
+         class="w-full flex justify-center items-center gap-3 bg-gray-900 border border-gray-700 text-white p-3 rounded-xl font-bold hover:bg-gray-800 transition">
+        <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20" height="20">
+        Google
+      </a>
+
+      <div class="mt-8 text-center">
+        <p class="text-gray-400 text-sm sm:text-base">
+          <span th:text="#{register.footer.text}">Вече имате акаунт?</span>
+          <a th:href="@{/login}"
+             class="text-white hover:text-gray-300 font-medium underline underline-offset-4 decoration-gray-600"
+             th:text="#{register.footer.link}">
+            Влезте тук
+          </a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init({ duration: 600, easing: 'ease-out', once: true });
+</script>
+</body>
+</html>

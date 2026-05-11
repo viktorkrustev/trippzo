@@ -110,7 +110,7 @@ public class TripController extends BaseController {
         int reviewCount = reviewService.getReviewCountForDriver(trip.getDriver().getId());
 
         model.addAttribute("trip", trip);
-        model.addAttribute("isDriver", isDriver); // Важно за HTML-а
+        model.addAttribute("isDriver", isDriver);
         model.addAttribute("messages", messages);
         model.addAttribute("seatsAvailable", seatsAvailable);
         model.addAttribute("currentUsername", currentUser != null ? currentUser.getUsername() : null);

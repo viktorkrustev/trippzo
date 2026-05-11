@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -100,23 +100,34 @@
       </div>
 
       <div class="glass rounded-3xl p-6 soft space-y-4 lg:hidden">
-        <div th:if="${!isDriver}">
-          <div th:if="${!hasSeatRequest}">
-            <form th:action="@{'/trips/' + ${trip.id} + '/book'}" method="post">
-              <button class="w-full bg-white text-black font-bold py-3 rounded-xl btn" th:text="#{trip.book}"></button>
-            </form>
+
+        <div sec:authorize="isAuthenticated()">
+          <div th:if="${!isDriver}">
+            <div th:if="${!hasSeatRequest}">
+              <form th:action="@{'/trips/' + ${trip.id} + '/book'}" method="post">
+                <button class="w-full bg-white text-black font-bold py-3 rounded-xl btn" th:text="#{trip.book}"></button>
+              </form>
+            </div>
+            <div th:if="${hasSeatRequest}" class="text-center py-3 bg-white/5 rounded-xl border border-white/10 text-sm italic" th:text="#{trip.status.pending}"></div>
+
+            <a th:href="@{'/chat/' + ${trip.driver.username}}"
+               class="block text-center py-3 mt-3 rounded-xl border border-white/10 hover:bg-white/5 btn"
+               th:text="#{trip.chatDriver}">
+            </a>
           </div>
-          <div th:if="${hasSeatRequest}" class="text-center py-3 bg-white/5 rounded-xl border border-white/10 text-sm italic" th:text="#{trip.status.pending}"></div>
 
-          <a th:href="@{'/chat/' + ${trip.driver.username}}"
-             class="block text-center py-3 mt-3 rounded-xl border border-white/10 hover:bg-white/5 btn"
-             th:text="#{trip.chatDriver}">
+          <div th:if="${isDriver}" class="text-center py-4 bg-white/5 rounded-2xl border border-white/10">
+            <p class="text-zinc-400 text-sm italic" th:text="#{trip.own.listing}">Това е вашата обява</p>
+          </div>
+        </div>
+
+        <div sec:authorize="isAnonymous()" class="space-y-3">
+          <a th:href="@{/login}" class="w-full block text-center bg-white text-black font-bold py-3 rounded-xl btn">
+            Влезте за резервация
           </a>
+          <p class="text-[10px] text-zinc-500 text-center uppercase tracking-tighter">Трябва да имате профил, за да пишете на шофьора</p>
         </div>
 
-        <div th:if="${isDriver}" class="text-center py-4 bg-white/5 rounded-2xl border border-white/10">
-          <p class="text-zinc-400 text-sm italic" th:text="#{trip.own.listing}">Това е вашата обява</p>
-        </div>
       </div>
     </div>
 

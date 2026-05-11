@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="#{profile.title} + ' | Trippzo'"></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(900px circle at 10% 0%, rgba(59,130,246,0.18), transparent 40%),
+        radial-gradient(800px circle at 90% 20%, rgba(168,85,247,0.12), transparent 45%),
+        #05060a;
+    }
+    .glass {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(18px);
+    }
+    .soft {
+      box-shadow: 0 20px 70px rgba(0,0,0,0.65);
+    }
+    .card {
+      transition: .2s ease;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .danger {
+      transition: .2s ease;
+    }
+    .danger:hover {
+      background: rgba(239,68,68,0.15);
+      border-color: rgba(239,68,68,0.4);
+      color: #ef4444;
+    }
+  </style>
+</head>
+
+<body class="text-white min-h-screen flex flex-col">
+
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="max-w-7xl mx-auto px-6 py-14 flex-1">
+
+  <div class="text-center mb-12">
+    <h1 class="text-4xl md:text-5xl font-bold" th:text="#{profile.title}"></h1>
+    <p class="text-white/50 mt-2" th:text="#{profile.subtitle}"></p>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-10">
+
+    <div class="lg:col-span-1">
+
+      <div class="glass rounded-3xl p-6 soft flex flex-col items-center">
+
+        <div class="w-24 h-24 rounded-full overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center">
+
+          <!-- Ако има снимка (Cloudinary URL) -->
+          <img th:if="${user.avatarUrl != null}"
+               th:src="${user.avatarUrl}"
+               class="w-full h-full object-<cover"/>
+
+          <!-- Ако НЯМА снимка - показваме човече (SVG) -->
+          <div th:if="${user.avatarUrl == null}" class="w-full h-full flex items-center justify-center bg-gray-700">
+            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
+                 class="w-16 h-16 text-white/40"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+
+        </div>
+        <h2 class="mt-4 text-xl font-semibold" th:text="${user.fullName}"></h2>
+        <p class="text-white/50 text-sm" th:text="${user.email}"></p>
+
+        <div class="w-full mt-6 border-t border-white/10 pt-4 text-center">
+
+          <p class="text-white/40 text-sm" th:text="#{profile.rating}"></p>
+
+          <div class="mt-2">
+
+            <p th:if="${reviewCount > 0}"
+               class="text-yellow-400 font-bold text-lg"
+               th:text="'⭐ ' + ${#numbers.formatDecimal(averageRating,1,1)}"></p>
+
+            <p th:if="${reviewCount > 0}"
+               class="text-white/50 text-xs"
+               th:text="${reviewCount} + ' ' + #{profile.reviews}"></p>
+
+            <p th:if="${reviewCount == 0}"
+               class="text-white/40 text-sm"
+               th:text="#{profile.noRatings}">
+            </p>
+
+          </div>
+
+        </div>
+
+        <form th:action="@{/profile/upload-avatar}"
+              method="post"
+              enctype="multipart/form-data"
+              class="mt-6 w-full space-y-3">
+
+          <input type="file"
+                 name="avatar"
+                 class="w-full text-sm text-white/60"/>
+
+          <button class="w-full bg-white text-black font-semibold py-2 rounded-xl"
+                  th:text="#{profile.upload}">
+          </button>
+
+        </form>
+
+        <button onclick="toggleEdit()"
+                class="w-full mt-4 border border-white/10 py-2 rounded-xl hover:bg-white/5 transition"
+                th:text="#{profile.edit}">
+        </button>
+
+        <div id="editProfileForm" class="hidden w-full mt-4 space-y-2">
+
+          <form th:action="@{/profile/edit}" method="post" class="space-y-2">
+
+            <input type="text"
+                   name="fullName"
+                   th:value="${user.fullName}"
+                   class="w-full bg-white/5 border border-white/10 p-2 rounded-lg"/>
+
+            <input type="email"
+                   name="email"
+                   th:value="${user.email}"
+                   class="w-full bg-white/5 border border-white/10 p-2 rounded-lg"/>
+
+            <button class="w-full bg-white text-black py-2 rounded-xl font-semibold"
+                    th:text="#{profile.save}">
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="lg:col-span-2 space-y-6">
+
+      <div class="glass rounded-3xl p-6 soft">
+
+        <div class="flex justify-between items-center mb-6 cursor-pointer" onclick="toggleTrips()">
+          <div class="flex items-center gap-2">
+            <h3 class="text-xl font-bold" th:text="#{profile.trips}">Моите пътувания</h3>
+            <span id="tripsArrow" class="text-xs transition-transform duration-300">▼</span>
+          </div>
+
+          <a href="/trips/create"
+             onclick="event.stopPropagation()"
+             class="bg-white text-black px-4 py-2 rounded-xl text-sm font-semibold"
+             th:text="'➕ ' + #{profile.newTrip}">
+          </a>
+        </div>
+
+        <div id="tripsList" class="hidden space-y-3">
+
+          <div th:each="trip : ${driverTrips}"
+               class="card glass rounded-xl p-4 flex justify-between items-center">
+            <div>
+              <p class="text-white/50 text-xs" th:text="#{profile.driver}"></p>
+              <p th:text="${trip.origin + ' → ' + trip.destination}"></p>
+            </div>
+            <div class="flex items-center gap-3">
+              <a th:href="@{'/trips/' + ${trip.id}}"
+                 class="text-blue-400 text-sm"
+                 th:text="#{profile.view}">
+              </a>
+              <form th:action="@{'/trips/' + ${trip.id} + '/delete'}" method="post">
+                <button class="danger text-xs border border-white/10 px-3 py-1 rounded-lg"
+                        th:text="#{profile.delete}">
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div th:each="trip : ${passengerTrips}"
+               class="card glass rounded-xl p-4 flex justify-between items-center">
+            <div>
+              <p class="text-white/50 text-xs" th:text="#{profile.passenger}"></p>
+              <p th:text="${trip.origin + ' → ' + trip.destination}"></p>
+            </div>
+            <a th:href="@{'/trips/' + ${trip.id}}"
+               class="text-blue-400 text-sm"
+               th:text="#{profile.view}">
+            </a>
+          </div>
+
+          <div th:if="${driverTrips.isEmpty() && passengerTrips.isEmpty()}"
+               class="text-white/40 text-center py-4 italic text-sm">
+            Нямате записани пътувания.
+          </div>
+
+        </div>
+      </div>
+
+      <div class="glass rounded-3xl p-6 soft">
+
+        <div class="flex justify-between mb-4 cursor-pointer"
+             onclick="toggleReviews()">
+
+          <h3 class="text-xl font-bold" th:text="'⭐ ' + #{profile.reviews}"></h3>
+          <span id="arrow">▼</span>
+
+        </div>
+
+        <div id="reviews" class="hidden space-y-3">
+
+          <div th:if="${driverReviews.isEmpty()}"
+               class="text-white/40"
+               th:text="#{profile.noReviews}">
+          </div>
+
+          <div th:each="review : ${driverReviews}"
+               class="glass rounded-xl p-4">
+
+            <p class="font-semibold" th:text="${review.reviewer.fullName}"></p>
+
+            <p class="text-yellow-400 text-sm">
+              <span th:each="i : ${#numbers.sequence(1, review.rating)}">⭐</span>
+            </p>
+
+            <p class="text-white/60 text-sm mt-1"
+               th:text="${review.comment}"></p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  function toggleEdit(){
+    document.getElementById("editProfileForm").classList.toggle("hidden");
+  }
+
+  function toggleReviews(){
+    document.getElementById("reviews").classList.toggle("hidden");
+    document.getElementById("arrow").classList.toggle("rotate-180");
+  }
+
+  function toggleTrips() {
+  const list = document.getElementById("tripsList");
+  const arrow = document.getElementById("tripsArrow");
+
+  list.classList.toggle("hidden");
+  arrow.classList.toggle("rotate-180");
+}
+</script>
+
+</body>
+</html>

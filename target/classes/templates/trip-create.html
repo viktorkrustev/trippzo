@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title th:text="#{trip.create.title}">Създаване на пътуване - Trippzo</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <style>
+    body {
+      background:
+        radial-gradient(900px circle at 20% 0%, rgba(59,130,246,0.18), transparent 40%),
+        radial-gradient(800px circle at 80% 20%, rgba(168,85,247,0.12), transparent 45%),
+        #05060a;
+    }
+    .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(16px); }
+    .soft { box-shadow: 0 25px 70px rgba(0,0,0,0.65); }
+    input, textarea, select { transition: all .2s ease; }
+    input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,0.3); outline: none; }
+
+    .flatpickr-calendar { z-index: 9999 !important; background: #12121a !important; border: 1px solid rgba(255,255,255,0.1) !important; box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important; }
+    .flatpickr-day { color: #e5e7eb !important; }
+    .flatpickr-day:hover { background: rgba(255,255,255,0.1) !important; }
+    .flatpickr-day.selected { background: white !important; color: black !important; }
+  </style>
+</head>
+
+<body class="text-white min-h-screen flex flex-col">
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="flex-grow max-w-3xl mx-auto px-6 py-14">
+
+  <div class="text-center mb-10">
+    <h1 class="text-4xl font-bold" th:text="#{trip.create.hero.title}">Създай пътуване</h1>
+    <p class="text-white/50 mt-2" th:text="#{trip.create.hero.subtitle}">Сподели маршрут и намери пътници</p>
+  </div>
+
+  <form th:action="@{/trips/create}" th:object="${tripDto}" method="post"
+        class="glass soft rounded-3xl p-8 space-y-8">
+
+    <div>
+      <h2 class="text-lg font-semibold mb-4" th:text="#{trip.create.section.route}">Маршрут</h2>
+      <div class="space-y-4">
+        <input type="text" th:field="*{origin}" th:placeholder="#{trip.create.placeholder.origin}"
+               class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10" required/>
+        <p th:if="${#fields.hasErrors('origin')}" th:errors="*{origin}" class="text-red-400 text-xs mt-1"></p>
+
+        <input type="text" th:field="*{destination}" th:placeholder="#{trip.create.placeholder.destination}"
+               class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10" required/>
+        <p th:if="${#fields.hasErrors('destination')}" th:errors="*{destination}" class="text-red-400 text-xs mt-1"></p>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-lg font-semibold mb-4" th:text="#{trip.create.section.time}">Време</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <input type="text" id="departureDate" th:field="*{departureDate}" th:placeholder="#{trip.create.placeholder.date}"
+               class="h-12 px-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer" required/>
+
+        <input type="time" th:field="*{departureTime}"
+               class="h-12 px-4 rounded-xl bg-white/5 border border-white/10" required/>
+      </div>
+      <p th:if="${#fields.hasErrors('departureDate')}" th:errors="*{departureDate}" class="text-red-400 text-xs mt-1"></p>
+      <p th:if="${#fields.hasErrors('departureTime')}" th:errors="*{departureTime}" class="text-red-400 text-xs mt-1"></p>
+    </div>
+
+    <div>
+      <h2 class="text-lg font-semibold mb-4" th:text="#{trip.create.section.details}">Детайли и Цена</h2>
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <select th:field="*{seatsTotal}"
+                class="h-12 px-4 rounded-xl bg-black border border-white/10 text-white focus:border-white/30 outline-none" required>
+          <option value="" th:text="#{trip.create.seats.label}">Места</option>
+          <option th:each="i : ${#numbers.sequence(1,7)}" th:value="${i}" th:text="${i}"></option>
+        </select>
+
+        <input type="number" step="0.50" th:field="*{pricePerSeat}" th:placeholder="#{trip.create.placeholder.price}"
+               class="h-12 px-4 rounded-xl bg-white/5 border border-white/10" required/>
+      </div>
+      <p th:if="${#fields.hasErrors('seatsTotal')}" th:errors="*{seatsTotal}" class="text-red-400 text-xs mt-1"></p>
+      <p th:if="${#fields.hasErrors('pricePerSeat')}" th:errors="*{pricePerSeat}" class="text-red-400 text-xs mt-1"></p>
+
+      <input type="text" th:field="*{car}" th:placeholder="#{trip.create.placeholder.car}"
+             class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10 mt-4"/>
+    </div>
+
+    <div>
+      <h2 class="text-lg font-semibold mb-4" th:text="#{trip.create.section.description}">Описание</h2>
+      <textarea th:field="*{description}" rows="4"
+                class="w-full p-4 rounded-xl bg-white/5 border border-white/10"
+                th:placeholder="#{trip.create.placeholder.desc}"></textarea>
+      <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-red-400 text-xs mt-1"></p>
+    </div>
+
+    <button type="submit" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] transition soft"
+            th:text="#{trip.create.btn.submit}">
+      Създай пътуване
+    </button>
+  </form>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script th:if="${#locale.language == 'bg'}" src="https://npmcdn.com/flatpickr/dist/l10n/bg.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const el = document.getElementById("departureDate");
+    const lang = document.documentElement.lang || 'bg';
+
+    if (el) {
+      flatpickr(el, {
+        dateFormat: "d-m-Y",
+        minDate: "today",
+        allowInput: false,
+        disableMobile: true,
+        locale: lang === 'bg' ? 'bg' : 'en'
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
