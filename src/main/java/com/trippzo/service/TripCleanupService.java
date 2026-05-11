@@ -19,7 +19,7 @@ public class TripCleanupService {
     }
 
     @Transactional
-    @Scheduled(cron = "${trip.cleanup.cron:0 * * * * ?}")
+    @Scheduled(cron = "${trip.cleanup.cron:0 0 2 * * ?}")
     public void deletePastTrips() {
         LocalDateTime cutoff = LocalDateTime.now();
         try {
