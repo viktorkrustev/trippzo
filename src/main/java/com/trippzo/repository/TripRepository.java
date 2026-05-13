@@ -18,6 +18,10 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     List<Trip> findByPassengersUser(User user);
 
+    int countByDriver(User user);
+
+    int countByPassengersUser(User user);
+
     @Modifying
     @Transactional
     int deleteByDepartureDateTimeBefore(LocalDateTime dateTime);

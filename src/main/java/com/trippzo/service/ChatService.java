@@ -5,8 +5,6 @@ import com.trippzo.model.Trip;
 import com.trippzo.model.User;
 import com.trippzo.model.dto.ChatPartnerDTO;
 import com.trippzo.repository.MessageRepository;
-import com.trippzo.repository.TripRepository;
-import com.trippzo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +20,10 @@ public class ChatService {
     private MessageRepository messageRepository;
 
     @Autowired
-    private TripRepository tripRepository;
+    private TripService tripService;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     public List<Message> getMessagesForTrip(Long tripId) {
         return messageRepository.findByTripIdOrderByTimestampAsc(tripId);
@@ -34,14 +32,18 @@ public class ChatService {
     public Message saveMessage(Long tripId, String senderIdentifier, String content, String receiverUsername) {
         Trip trip = null;
         if (tripId != null) {
-            trip = tripRepository.findById(tripId).orElse(null);
+            trip = tripService.getTripById(tripId);
         }
 
-        User sender = userRepository.findByUsername(senderIdentifier)
-                .orElseGet(() -> userRepository.findByEmail(senderIdentifier).orElse(null));
+        User sender = userService.findByUsername(senderIdentifier);
+        if (sender == null) {
+            sender = userService.findByEmail(senderIdentifier);
+        }
 
-        User receiver = userRepository.findByUsername(receiverUsername)
-                .orElseGet(() -> userRepository.findByEmail(receiverUsername).orElse(null));
+        User receiver = userService.findByUsername(receiverUsername);
+        if (receiver == null) {
+            receiver = userService.findByEmail(receiverUsername);
+        }
 
         if (sender == null || receiver == null) {
             return null;
@@ -75,24 +77,6 @@ public class ChatService {
 
     public int countAllUnreadMessages(String currentUsername) {
         return messageRepository.countByReceiverUsernameAndReadFalse(currentUsername);
-    }
-
-    public String getLastMessageTime(String userA, String userB) {
-        List<Message> messages = getChatBetween(userA, userB);
-        if (messages.isEmpty()) {
-            return "";
-        }
-        Message last = messages.get(messages.size() - 1);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, HH:mm");
-        return last.getTimestamp().format(formatter);
-    }
-
-    public String getLastMessageContent(String userA, String userB) {
-        List<Message> messages = getChatBetween(userA, userB);
-        if (messages.isEmpty()) {
-            return "";
-        }
-        return messages.get(messages.size() - 1).getMessageText();
     }
 
     public void markMessagesAsRead(String senderUsername, String receiverUsername) {

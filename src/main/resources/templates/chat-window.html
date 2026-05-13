@@ -176,11 +176,6 @@
 
 </div>
 
-<audio id="notificationSound"
-       src="/sounds/notification.mp3"
-       preload="auto">
-</audio>
-
 <script th:inline="javascript">
   /*<![CDATA[*/
 
@@ -230,11 +225,6 @@
         } else {
 
           showMessage(msg);
-
-          if (msg.sender.username !== username) {
-
-            playNotificationSound();
-          }
         }
 
       });
@@ -362,16 +352,6 @@
 
         seenStatus.style.display = 'block';
       }
-    }
-  }
-
-  function playNotificationSound() {
-
-    const audio = document.getElementById('notificationSound');
-
-    if (audio) {
-
-      audio.play().catch(() => {});
     }
   }
 

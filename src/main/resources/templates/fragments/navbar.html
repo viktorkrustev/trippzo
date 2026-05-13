@@ -17,7 +17,7 @@
           <div class="flex items-center space-x-10 text-[13px] font-semibold uppercase tracking-wide">
             <a href="/" class="text-zinc-400 hover:text-white transition" th:text="#{nav.home}">Начало</a>
             <a href="/trips/search" class="text-zinc-400 hover:text-white transition" th:text="#{nav.search}">Търсене</a>
-            <a href="/trips/create" class="text-zinc-400 hover:text-white transition" th:text="#{nav.create}">Създаване</a>
+            <a href="/trips/create" sec:authorize="isAuthenticated()" class="text-zinc-400 hover:text-white transition" th:text="#{nav.create}">Създаване</a>
             <a href="/profile" sec:authorize="isAuthenticated()" class="text-zinc-400 hover:text-white transition" th:text="#{nav.profile}">Профил</a>
 
             <a href="/chat" sec:authorize="isAuthenticated()"
@@ -68,15 +68,39 @@
 
     <div class="flex items-center justify-between p-6 border-b border-white/5">
       <div sec:authorize="isAuthenticated()" class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-white">
-          <span th:text="${#authentication.name.substring(0,1).toUpperCase()}">U</span>
+
+        <div class="w-10 h-10 rounded-full overflow-hidden border border-white/10 flex items-center justify-center font-bold text-white bg-gradient-to-tr from-sky-500 to-indigo-600">
+
+          <img th:if="${#authentication.principal instanceof T(org.springframework.security.oauth2.core.user.OAuth2User) and #authentication.principal.attributes['picture'] != null}"
+               th:src="${#authentication.principal.attributes['picture']}"
+               class="w-full h-full object-cover"
+               alt="Profile Picture">
+
+          <img th:if="${#authentication.principal instanceof T(com.trippzo.config.CustomUserDetails) and #authentication.principal.user.avatarUrl != null}"
+               th:src="${#authentication.principal.user.avatarUrl}"
+               class="w-full h-full object-cover"
+               alt="Profile Picture">
+
+          <span th:if="${(#authentication.principal instanceof T(org.springframework.security.oauth2.core.user.OAuth2User) ? #authentication.principal.attributes['picture'] == null : true) and (#authentication.principal instanceof T(com.trippzo.config.CustomUserDetails) ? #authentication.principal.user.avatarUrl == null : true)}"
+                th:text="${#authentication.principal instanceof T(org.springframework.security.oauth2.core.user.OAuth2User)
+                      ? #authentication.principal.attributes['name'].substring(0,1).toUpperCase()
+                      : (#authentication.principal instanceof T(com.trippzo.config.CustomUserDetails)
+                         ? #authentication.principal.user.fullName.substring(0,1).toUpperCase()
+                         : #authentication.name.substring(0,1).toUpperCase())}">
+        U
+      </span>
         </div>
+
         <div class="flex flex-col">
           <span class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold" th:text="#{nav.welcome}">Здравей,</span>
           <span class="text-sm font-bold text-white"
-                th:text="${#authentication.principal instanceof T(com.trippzo.config.CustomUserDetails) ? #authentication.principal.user.fullName : #authentication.name}">
-              Потребител
-          </span>
+                th:text="${#authentication.principal instanceof T(com.trippzo.config.CustomUserDetails)
+              ? #authentication.principal.user.fullName
+              : (#authentication.principal instanceof T(org.springframework.security.oauth2.core.user.OAuth2User)
+                 ? #authentication.principal.attributes['name']
+                 : #authentication.name)}">
+          Потребител
+      </span>
         </div>
       </div>
       <button id="closeMenuBtn" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-zinc-400">✕</button>

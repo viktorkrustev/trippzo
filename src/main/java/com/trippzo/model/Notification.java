@@ -1,5 +1,7 @@
 package com.trippzo.model;
 
+import com.trippzo.model.enums.NotificationStatus;
+import com.trippzo.model.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,17 +30,21 @@ public class Notification {
     @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String type;
+    private NotificationType type;
 
     @Column(length = 500)
     private String message;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status = "PENDING";
+    private NotificationStatus status = NotificationStatus.PENDING;
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime respondedAt;
 }
+
+

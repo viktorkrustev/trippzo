@@ -19,7 +19,6 @@
     .soft { box-shadow: 0 25px 70px rgba(0,0,0,0.65); }
     input, textarea, select { transition: all .2s ease; }
     input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,0.3); outline: none; }
-
     .flatpickr-calendar { z-index: 9999 !important; background: #12121a !important; border: 1px solid rgba(255,255,255,0.1) !important; box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important; }
     .flatpickr-day { color: #e5e7eb !important; }
     .flatpickr-day:hover { background: rgba(255,255,255,0.1) !important; }
@@ -38,52 +37,84 @@
     <p class="text-white/50 mt-2" th:text="#{trip.create.hero.subtitle}">Сподели маршрут и намери пътници</p>
   </div>
 
-  <form th:action="@{/trips/create}" th:object="${tripDto}" method="post"
+  <div th:if="${tripDto == null}" class="glass soft rounded-3xl p-8 mb-8 border border-red-500/30 text-center">
+    <p class="text-red-400 font-bold text-xl mb-2">⚠️ Липсващ Модел</p>
+    <p class="text-white/70">
+      Обектът <b>tripDto</b> не стига до HTML-а. Увери се, че в <code>TripController.java</code> имаш: <br>
+      <code class="block mt-2 bg-black/50 p-2 rounded text-sm text-green-400">model.addAttribute("tripDto", new TripCreateDTO());</code>
+    </p>
+  </div>
+
+  <form th:if="${tripDto != null}" th:action="@{/trips/create}" th:object="${tripDto}" method="post"
         class="glass soft rounded-3xl p-8 space-y-8">
 
     <div>
       <h2 class="text-lg font-semibold mb-4" th:text="#{trip.create.section.route}">Маршрут</h2>
       <div class="space-y-4">
-        <input type="text" th:field="*{origin}" th:placeholder="#{trip.create.placeholder.origin}"
-               class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10" required/>
-        <p th:if="${#fields.hasErrors('origin')}" th:errors="*{origin}" class="text-red-400 text-xs mt-1"></p>
+        <div>
+          <input type="text" th:field="*{origin}" th:placeholder="#{trip.create.placeholder.origin}"
+                 class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10"/>
+          <p th:if="${#fields.hasErrors('origin')}" th:errors="*{origin}"
+             class="text-red-400 text-xs mt-1"></p>
+        </div>
 
-        <input type="text" th:field="*{destination}" th:placeholder="#{trip.create.placeholder.destination}"
-               class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10" required/>
-        <p th:if="${#fields.hasErrors('destination')}" th:errors="*{destination}" class="text-red-400 text-xs mt-1"></p>
+        <div>
+          <input type="text" th:field="*{destination}" th:placeholder="#{trip.create.placeholder.destination}"
+                 class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10"/>
+          <p th:if="${#fields.hasErrors('destination')}" th:errors="*{destination}"
+             class="text-red-400 text-xs mt-1"></p>
+        </div>
       </div>
     </div>
 
     <div>
       <h2 class="text-lg font-semibold mb-4" th:text="#{trip.create.section.time}">Време</h2>
       <div class="grid md:grid-cols-2 gap-4">
-        <input type="text" id="departureDate" th:field="*{departureDate}" th:placeholder="#{trip.create.placeholder.date}"
-               class="h-12 px-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer" required/>
+        <div>
+          <input type="text" id="departureDate" th:field="*{departureDate}"
+                 th:placeholder="#{trip.create.placeholder.date}"
+                 class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer"/>
+          <p th:if="${#fields.hasErrors('departureDate')}" th:errors="*{departureDate}"
+             class="text-red-400 text-xs mt-1"></p>
+        </div>
 
-        <input type="time" th:field="*{departureTime}"
-               class="h-12 px-4 rounded-xl bg-white/5 border border-white/10" required/>
+        <div>
+          <input type="time" th:field="*{departureTime}"
+                 class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10"/>
+          <p th:if="${#fields.hasErrors('departureTime')}" th:errors="*{departureTime}"
+             class="text-red-400 text-xs mt-1"></p>
+        </div>
       </div>
-      <p th:if="${#fields.hasErrors('departureDate')}" th:errors="*{departureDate}" class="text-red-400 text-xs mt-1"></p>
-      <p th:if="${#fields.hasErrors('departureTime')}" th:errors="*{departureTime}" class="text-red-400 text-xs mt-1"></p>
     </div>
 
     <div>
       <h2 class="text-lg font-semibold mb-4" th:text="#{trip.create.section.details}">Детайли и Цена</h2>
       <div class="grid md:grid-cols-2 gap-4 mb-4">
-        <select th:field="*{seatsTotal}"
-                class="h-12 px-4 rounded-xl bg-black border border-white/10 text-white focus:border-white/30 outline-none" required>
-          <option value="" th:text="#{trip.create.seats.label}">Места</option>
-          <option th:each="i : ${#numbers.sequence(1,7)}" th:value="${i}" th:text="${i}"></option>
-        </select>
+        <div>
+          <select th:field="*{seatsTotal}"
+                  class="w-full h-12 px-4 rounded-xl bg-[#0a0a0f] border border-white/10 text-white focus:border-white/30 outline-none">
+            <option value="" th:text="#{trip.create.seats.label}">Места</option>
+            <option th:each="i : ${#numbers.sequence(1,7)}" th:value="${i}" th:text="${i}"></option>
+          </select>
+          <p th:if="${#fields.hasErrors('seatsTotal')}" th:errors="*{seatsTotal}"
+             class="text-red-400 text-xs mt-1"></p>
+        </div>
 
-        <input type="number" step="0.50" th:field="*{pricePerSeat}" th:placeholder="#{trip.create.placeholder.price}"
-               class="h-12 px-4 rounded-xl bg-white/5 border border-white/10" required/>
+        <div>
+          <input type="number" step="0.50" th:field="*{pricePerSeat}"
+                 th:placeholder="#{trip.create.placeholder.price}"
+                 class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10"/>
+          <p th:if="${#fields.hasErrors('pricePerSeat')}" th:errors="*{pricePerSeat}"
+             class="text-red-400 text-xs mt-1"></p>
+        </div>
       </div>
-      <p th:if="${#fields.hasErrors('seatsTotal')}" th:errors="*{seatsTotal}" class="text-red-400 text-xs mt-1"></p>
-      <p th:if="${#fields.hasErrors('pricePerSeat')}" th:errors="*{pricePerSeat}" class="text-red-400 text-xs mt-1"></p>
 
-      <input type="text" th:field="*{car}" th:placeholder="#{trip.create.placeholder.car}"
-             class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10 mt-4"/>
+      <div>
+        <input type="text" th:field="*{car}" th:placeholder="#{trip.create.placeholder.car}"
+               class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10"/>
+        <p th:if="${#fields.hasErrors('car')}" th:errors="*{car}"
+           class="text-red-400 text-xs mt-1"></p>
+      </div>
     </div>
 
     <div>
@@ -91,10 +122,12 @@
       <textarea th:field="*{description}" rows="4"
                 class="w-full p-4 rounded-xl bg-white/5 border border-white/10"
                 th:placeholder="#{trip.create.placeholder.desc}"></textarea>
-      <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-red-400 text-xs mt-1"></p>
+      <p th:if="${#fields.hasErrors('description')}" th:errors="*{description}"
+         class="text-red-400 text-xs mt-1"></p>
     </div>
 
-    <button type="submit" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] transition soft"
+    <button type="submit"
+            class="w-full bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] transition soft"
             th:text="#{trip.create.btn.submit}">
       Създай пътуване
     </button>
@@ -102,13 +135,13 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script th:if="${#locale.language == 'bg'}" src="https://npmcdn.com/flatpickr/dist/l10n/bg.js"></script>
+<script th:if="${#locale.language == 'bg'}"
+        src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/bg.js"></script>
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const el = document.getElementById("departureDate");
     const lang = document.documentElement.lang || 'bg';
-
     if (el) {
       flatpickr(el, {
         dateFormat: "d-m-Y",

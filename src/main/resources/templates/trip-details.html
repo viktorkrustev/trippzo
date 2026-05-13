@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="bg" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html th:lang="${#locale.language}"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,20 +16,10 @@
         radial-gradient(800px circle at 85% 20%, rgba(168,85,247,0.14), transparent 45%),
         #05060a;
     }
-    .glass {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(18px);
-    }
-    .soft {
-      box-shadow: 0 20px 60px rgba(0,0,0,0.55);
-    }
-    .btn {
-      transition: all 0.2s ease;
-    }
-    .btn:active {
-      transform: scale(0.98);
-    }
+    .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(18px); }
+    .soft { box-shadow: 0 20px 60px rgba(0,0,0,0.55); }
+    .btn { transition: all 0.2s ease; }
+    .btn:active { transform: scale(0.98); }
   </style>
 </head>
 
@@ -66,7 +58,6 @@
               <p class="text-white/40 text-xs" th:text="#{trip.seats}"></p>
               <p class="text-lg font-semibold text-green-400" th:text="#{trip.seats.available(${seatsAvailable})}"></p>
             </div>
-
             <div>
               <p class="text-white/40 text-xs" th:text="#{trip.price}"></p>
               <p class="text-2xl font-bold text-white">
@@ -81,8 +72,7 @@
               <div class="w-14 h-14 rounded-full overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center">
                 <img th:if="${trip.driver != null and trip.driver.avatarUrl != null and trip.driver.avatarUrl != ''}"
                      th:src="${trip.driver.avatarUrl}" class="w-full h-full object-cover"/>
-                <span th:if="${trip.driver == null or trip.driver.avatarUrl == null or trip.driver.avatarUrl == ''}"
-                      class="text-white/60 text-2xl">👤</span>
+                <span th:unless="${trip.driver != null and trip.driver.avatarUrl != null and trip.driver.avatarUrl != ''}" class="text-white/60 text-2xl">👤</span>
               </div>
               <div>
                 <p class="text-white/40 text-xs" th:text="#{trip.driver}"></p>
@@ -100,63 +90,57 @@
       </div>
 
       <div class="glass rounded-3xl p-6 soft space-y-4 lg:hidden">
-
         <div sec:authorize="isAuthenticated()">
           <div th:if="${!isDriver}">
             <div th:if="${!hasSeatRequest}">
-              <form th:action="@{'/trips/' + ${trip.id} + '/book'}" method="post">
+              <form th:action="@{/trips/{id}/booking/request(id=${trip.id})}" method="post">
                 <button class="w-full bg-white text-black font-bold py-3 rounded-xl btn" th:text="#{trip.book}"></button>
               </form>
             </div>
             <div th:if="${hasSeatRequest}" class="text-center py-3 bg-white/5 rounded-xl border border-white/10 text-sm italic" th:text="#{trip.status.pending}"></div>
-
-            <a th:href="@{'/chat/' + ${trip.driver.username}}"
-               class="block text-center py-3 mt-3 rounded-xl border border-white/10 hover:bg-white/5 btn"
-               th:text="#{trip.chatDriver}">
-            </a>
+            <a th:href="@{/chat/{username}(username=${trip.driver.username})}" class="block text-center py-3 mt-3 rounded-xl border border-white/10 hover:bg-white/5 btn" th:text="#{trip.chatDriver}"></a>
           </div>
-
           <div th:if="${isDriver}" class="text-center py-4 bg-white/5 rounded-2xl border border-white/10">
             <p class="text-zinc-400 text-sm italic" th:text="#{trip.own.listing}">Това е вашата обява</p>
           </div>
         </div>
 
         <div sec:authorize="isAnonymous()" class="space-y-3">
-          <a th:href="@{/login}" class="w-full block text-center bg-white text-black font-bold py-3 rounded-xl btn">
-            Влезте за резервация
-          </a>
+          <a th:href="@{/login}" class="w-full block text-center bg-white text-black font-bold py-3 rounded-xl btn">Влезте за резервация</a>
           <p class="text-[10px] text-zinc-500 text-center uppercase tracking-tighter">Трябва да имате профил, за да пишете на шофьора</p>
         </div>
-
       </div>
     </div>
 
     <div class="space-y-6">
 
       <div class="glass rounded-3xl p-6 soft space-y-4 hidden lg:block">
-        <div th:if="${!isDriver}">
-          <div th:if="${!hasSeatRequest}">
-            <form th:action="@{'/trips/' + ${trip.id} + '/book'}" method="post">
-              <button class="w-full bg-white text-black font-bold py-3 rounded-xl btn" th:text="#{trip.book}"></button>
-            </form>
+
+        <div sec:authorize="isAuthenticated()">
+          <div th:if="${!isDriver}">
+            <div th:if="${!hasSeatRequest}">
+              <form th:action="@{/trips/{id}/booking/request(id=${trip.id})}" method="post">
+                <button class="w-full bg-white text-black font-bold py-3 rounded-xl btn" th:text="#{trip.book}"></button>
+              </form>
+            </div>
+
+            <div th:if="${hasSeatRequest}" class="space-y-2">
+              <div th:if="${seatRequestStatus != null and seatRequestStatus.name() == 'PENDING'}" class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 text-center py-3 rounded-xl" th:text="#{trip.status.pending}"></div>
+              <div th:if="${seatRequestStatus != null and seatRequestStatus.name() == 'ACCEPTED'}" class="bg-green-500/20 text-green-400 border border-green-500/30 text-center py-3 rounded-xl" th:text="#{trip.status.accepted}"></div>
+              <div th:if="${seatRequestStatus != null and seatRequestStatus.name() == 'REJECTED'}" class="bg-red-500/20 text-red-400 border border-red-500/30 text-center py-3 rounded-xl" th:text="#{trip.status.rejected}"></div>
+            </div>
+
+            <a th:href="@{/chat/{username}(username=${trip.driver.username})}" class="block mt-4 text-center py-3 rounded-xl border border-white/10 hover:bg-white/5 btn" th:text="#{trip.chat}"></a>
           </div>
 
-          <div th:if="${hasSeatRequest}" class="space-y-2">
-            <div th:if="${seatRequestStatus == 'PENDING'}" class="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 text-center py-3 rounded-xl" th:text="#{trip.status.pending}"></div>
-            <div th:if="${seatRequestStatus == 'ACCEPTED'}" class="bg-green-500/20 text-green-400 border border-green-500/30 text-center py-3 rounded-xl" th:text="#{trip.status.accepted}"></div>
-            <div th:if="${seatRequestStatus == 'REJECTED'}" class="bg-red-500/20 text-red-400 border border-red-500/30 text-center py-3 rounded-xl" th:text="#{trip.status.rejected}"></div>
+          <div th:if="${isDriver}" class="text-center py-6 bg-white/5 rounded-2xl border border-white/10">
+            <p class="text-zinc-400 text-sm" th:text="#{trip.organizer.msg}">Вие сте организатор на това пътуване</p>
+            <a th:href="@{/profile}" class="text-blue-400 text-xs font-bold uppercase mt-3 block hover:underline" th:text="#{trip.manage.profile}">Управление в профила</a>
           </div>
-
-          <a th:href="@{'/chat/' + ${trip.driver.username}}"
-             class="block mt-4 text-center py-3 rounded-xl border border-white/10 hover:bg-white/5 btn"
-             th:text="#{trip.chat}">
-          </a>
         </div>
 
-        <div th:if="${isDriver}" class="text-center py-6 bg-white/5 rounded-2xl border border-white/10">
-          <p class="text-zinc-400 text-sm" th:text="#{trip.organizer.msg}">Вие сте организатор на това пътуване</p>
-          <a th:href="@{/profile}" class="text-blue-400 text-xs font-bold uppercase mt-3 block hover:underline"
-             th:text="#{trip.manage.profile}">Управление в профила</a>
+        <div sec:authorize="isAnonymous()" class="space-y-3">
+          <a th:href="@{/login}" class="w-full block text-center bg-white text-black font-bold py-3 rounded-xl btn">Влезте за резервация</a>
         </div>
       </div>
 
@@ -166,32 +150,37 @@
           <p class="text-yellow-400 text-sm" th:text="'⭐ ' + ${#numbers.formatDecimal(driverRating,1,1)}"></p>
         </div>
 
-        <div th:if="${!isDriver}">
-          <div th:if="${!hasReviewed}">
-            <form th:action="@{'/reviews/' + ${trip.id} + '/add'}" method="post" class="space-y-4">
-              <div id="starRating" class="flex gap-2 text-3xl">
-                <button type="button" class="star text-white/20" data-value="1">★</button>
-                <button type="button" class="star text-white/20" data-value="2">★</button>
-                <button type="button" class="star text-white/20" data-value="3">★</button>
-                <button type="button" class="star text-white/20" data-value="4">★</button>
-                <button type="button" class="star text-white/20" data-value="5">★</button>
-              </div>
-              <input type="hidden" id="rating" name="rating" required>
-              <textarea name="comment" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm" th:placeholder="#{trip.comment}"></textarea>
-              <button class="w-full bg-white text-black font-bold py-3 rounded-xl btn" th:text="#{trip.save}"></button>
-            </form>
+        <div sec:authorize="isAuthenticated()">
+          <div th:if="${!isDriver}">
+            <div th:if="${!hasReviewed}">
+              <form th:action="@{/reviews/{id}/add(id=${trip.id})}" method="post" class="space-y-4">
+                <div id="starRating" class="flex gap-2 text-3xl">
+                  <button type="button" class="star text-white/20" data-value="1">★</button>
+                  <button type="button" class="star text-white/20" data-value="2">★</button>
+                  <button type="button" class="star text-white/20" data-value="3">★</button>
+                  <button type="button" class="star text-white/20" data-value="4">★</button>
+                  <button type="button" class="star text-white/20" data-value="5">★</button>
+                </div>
+                <input type="hidden" id="rating" name="rating" required>
+                <textarea name="comment" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm" th:placeholder="#{trip.comment}"></textarea>
+                <button class="w-full bg-white text-black font-bold py-3 rounded-xl btn" th:text="#{trip.save}"></button>
+              </form>
+            </div>
+            <div th:if="${hasReviewed}" class="text-center text-green-400 text-sm py-4 border border-green-500/20 bg-green-500/5 rounded-xl" th:text="#{trip.alreadyReviewed}"></div>
           </div>
-          <div th:if="${hasReviewed}" class="text-center text-green-400 text-sm py-4 border border-green-500/20 bg-green-500/5 rounded-xl" th:text="#{trip.alreadyReviewed}"></div>
+          <div th:if="${isDriver}" class="text-center text-zinc-500 text-sm italic py-4" th:text="#{trip.review.own.error}">
+            Не можете да давате оценка на собствено пътуване.
+          </div>
         </div>
 
-        <div th:if="${isDriver}" class="text-center text-zinc-500 text-sm italic py-4"
-             th:text="#{trip.review.own.error}">
-          Не можете да давате оценка на собствено пътуване.
+        <div sec:authorize="isAnonymous()" class="text-center py-6">
+          <p class="text-zinc-400 text-sm mb-3">Влезте в профила си, за да оставите отзив.</p>
+          <a th:href="@{/login}" class="inline-block px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition">Вход</a>
         </div>
+
       </div>
 
     </div>
-
   </div>
 </div>
 
@@ -199,17 +188,17 @@
   const stars = document.querySelectorAll(".star");
   const rating = document.getElementById("rating");
 
-  function paint(v){
-    stars.forEach(s=>{
+  function paint(v) {
+    stars.forEach(s => {
       const val = parseInt(s.dataset.value);
       s.classList.toggle("text-yellow-400", val <= v);
       s.classList.toggle("text-white/20", val > v);
     });
   }
 
-  stars.forEach(s=>{
+  stars.forEach(s => {
     const val = parseInt(s.dataset.value);
-    s.addEventListener("click", ()=>{
+    s.addEventListener("click", () => {
       rating.value = val;
       paint(val);
     });

@@ -6,8 +6,8 @@ import com.trippzo.model.dto.TripCreateDTO;
 import com.trippzo.repository.TripRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,15 +17,21 @@ import java.util.Optional;
 @Service
 public class TripService {
 
+    private static final DateTimeFormatter DEPARTURE_FORMATTER =
+            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+
     private final TripRepository tripRepository;
 
     public TripService(TripRepository tripRepository) {
         this.tripRepository = tripRepository;
     }
 
-    public Page<Trip> searchTrips(String origin, String destination, String dateString, Pageable pageable) {
-        Specification<Trip> spec = TripSpecifications.searchTrips(origin, destination, dateString);
-        return tripRepository.findAll(spec, pageable);
+    public Page<Trip> searchTrips(String origin, String destination,
+                                  String dateString, Pageable pageable) {
+        return tripRepository.findAll(
+                TripSpecifications.searchTrips(origin, destination, dateString),
+                pageable
+        );
     }
 
     public List<Trip> getTripsAsDriver(User user) {
@@ -36,14 +42,17 @@ public class TripService {
         return tripRepository.findByPassengersUser(user);
     }
 
+
     public int getTripsByUser(User user) {
-        return getTripsAsDriver(user).size() + getTripsAsPassenger(user).size();
+        return tripRepository.countByDriver(user)
+                + tripRepository.countByPassengersUser(user);
     }
 
     public Optional<Trip> findById(Long tripId) {
         return tripRepository.findById(tripId);
     }
 
+    @Transactional
     public void deleteTrip(Trip trip) {
         tripRepository.delete(trip);
     }
@@ -52,20 +61,18 @@ public class TripService {
         return tripRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public void createNewTrip(TripCreateDTO tripDto, User driver) {
+        String dateTimeStr = tripDto.getDepartureDate() + " " + tripDto.getDepartureTime();
+
         Trip trip = new Trip();
         trip.setOrigin(tripDto.getOrigin());
         trip.setDestination(tripDto.getDestination());
         trip.setCar(tripDto.getCar());
         trip.setSeatsTotal(tripDto.getSeatsTotal());
         trip.setDescription(tripDto.getDescription());
-
         trip.setPricePerSeat(tripDto.getPricePerSeat());
-
-        String dateTimeStr = tripDto.getDepartureDate() + " " + tripDto.getDepartureTime();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-        trip.setDepartureDateTime(LocalDateTime.parse(dateTimeStr, formatter));
-
+        trip.setDepartureDateTime(LocalDateTime.parse(dateTimeStr, DEPARTURE_FORMATTER));
         trip.setDriver(driver);
         trip.setActive(true);
 

@@ -1,5 +1,7 @@
 package com.trippzo.controller;
 
+import com.trippzo.exception.PasswordMismatchException;
+import com.trippzo.exception.UserAlreadyExistsException;
 import com.trippzo.model.dto.UserRegisterDTO;
 import com.trippzo.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,38 +26,26 @@ public class UserController {
     @GetMapping("/register")
     public String showRegisterForm(HttpServletRequest request, Model model) {
         request.getSession(true);
-
         model.addAttribute("userDto", new UserRegisterDTO());
         return "register";
     }
 
     @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute("userDto") UserRegisterDTO userDto, BindingResult bindingResult,
-            Model model) {
-
+    public String registerUser(@Valid @ModelAttribute("userDto") UserRegisterDTO userDto, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
-            return "register";
-        }
-
-        if (!userDto.getPassword().equals(userDto.getConfirmPassword())) {
-            bindingResult.rejectValue("confirmPassword", "error.userDto", "Паролите не съвпадат!");
-            return "register";
-        }
-
-        if (userService.existsByUsername(userDto.getUsername())) {
-            bindingResult.rejectValue("username", "error.user", "Това потребителско име вече е заето!");
-            return "register";
-        }
-
-        if (userService.existsByEmail(userDto.getEmail())) {
-            bindingResult.rejectValue("email", "error.user", "Този имейл вече е регистриран!");
             return "register";
         }
 
         try {
             userService.registerUser(userDto);
-        } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
+        } catch (UserAlreadyExistsException e) {
+            bindingResult.rejectValue(e.getField(), "error." + e.getField(), e.getMessage());
+            return "register";
+        } catch (PasswordMismatchException e) {
+            bindingResult.rejectValue("confirmPassword", "error.confirmPassword", e.getMessage());
+            return "register";
+        } catch (Exception e) {
+            model.addAttribute("error", "Възникна неочаквана грешка. Моля, опитайте пак.");
             return "register";
         }
 
@@ -63,10 +53,8 @@ public class UserController {
     }
 
     @GetMapping("/login")
-    public String showLoginForm(HttpServletRequest request, Model model,
-            @RequestParam(value = "error", required = false) String error) {
+    public String showLoginForm(HttpServletRequest request, Model model, @RequestParam(value = "error", required = false) String error) {
         request.getSession(true);
-
         if (error != null) {
             model.addAttribute("error", "Невалидно потребителско име или парола.");
         }

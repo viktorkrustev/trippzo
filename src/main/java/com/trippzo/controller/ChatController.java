@@ -1,11 +1,8 @@
 package com.trippzo.controller;
 
-import com.trippzo.model.Message;
 import com.trippzo.model.User;
 import com.trippzo.model.dto.ChatPartnerDTO;
 import com.trippzo.service.ChatService;
-import com.trippzo.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -23,22 +20,19 @@ import java.util.Locale;
 public class ChatController extends BaseController {
 
     private final ChatService chatService;
-    private final UserService userService;
 
-    @Autowired
-    public ChatController(ChatService chatService, UserService userService) {
+    public ChatController(ChatService chatService) {
         this.chatService = chatService;
-        this.userService = userService;
     }
 
     @GetMapping
     public String showInbox(Model model, @AuthenticationPrincipal Object principal, Locale locale) {
         User currentUser = resolveUser(principal);
-        if (currentUser == null)
+        if (currentUser == null) {
             return "redirect:/login";
+        }
 
         String currentUsername = currentUser.getUsername();
-
         List<ChatPartnerDTO> partnerDtos = chatService.getSortedChatPartners(currentUsername, locale);
 
         model.addAttribute("chatPartners", partnerDtos);
@@ -47,26 +41,28 @@ public class ChatController extends BaseController {
     }
 
     @GetMapping("/{username}")
-    public String showChat(@PathVariable String username, Model model, @AuthenticationPrincipal Object principal) {
+    public String showChat(@PathVariable String username, Model model,
+                           @AuthenticationPrincipal Object principal) {
         User currentUser = resolveUser(principal);
-        if (currentUser == null)
+        if (currentUser == null) {
             return "redirect:/login";
+        }
 
-        chatService.markMessagesAsRead(username, currentUser.getUsername());
+        String currentUsername = currentUser.getUsername();
 
-        List<Message> messages = chatService.getChatBetween(currentUser.getUsername(), username);
+        chatService.markMessagesAsRead(username, currentUsername);
+
         User chatPartner = userService.findByUsername(username);
 
-        model.addAttribute("messages", messages);
+        model.addAttribute("messages", chatService.getChatBetween(currentUsername, username));
         model.addAttribute("chatPartner", chatPartner);
-        model.addAttribute("currentUsername", currentUser.getUsername()); // Подаваме реалния username
+        model.addAttribute("currentUsername", currentUsername);
         return "chat-window";
     }
 
     @GetMapping("/unread/count")
     @ResponseBody
     public int getUnreadCount(@AuthenticationPrincipal UserDetails user) {
-
         if (user == null) {
             return 0;
         }

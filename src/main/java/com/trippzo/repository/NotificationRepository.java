@@ -1,7 +1,12 @@
 package com.trippzo.repository;
 
 import com.trippzo.model.Notification;
+import com.trippzo.model.enums.NotificationStatus;
+import com.trippzo.model.enums.NotificationType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,11 +17,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     List<Notification> findByRecipientIdOrderByCreatedAtDesc(Long recipientId);
 
-    List<Notification> findByRecipientIdAndStatusOrderByCreatedAtDesc(Long recipientId, String status);
 
-    int countByRecipientIdAndStatus(Long recipientId, String status);
+    Optional<Notification> findByTripIdAndSenderIdAndType(Long tripId, Long senderId, NotificationType type);
 
-    Optional<Notification> findByTripIdAndSenderIdAndType(Long tripId, Long senderId, String type);
 
-    int countByRecipient_IdAndStatusNot(Long userId, String status);
+    int countByRecipientIdAndStatusNot(Long recipientId, NotificationStatus status);
+
+
+    @Modifying
+    @Query("DELETE FROM Notification n WHERE n.recipient.id = :recipientId")
+    void deleteByRecipientId(@Param("recipientId") Long recipientId);
 }

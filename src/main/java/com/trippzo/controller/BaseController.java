@@ -21,7 +21,4 @@ public abstract class BaseController {
         return null;
     }
 
-    protected User extractUserFromCustomDetails(CustomUserDetails userDetails) {
-        return userDetails != null ? userDetails.getUser() : null;
-    }
 }

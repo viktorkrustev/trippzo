@@ -2,7 +2,6 @@ package com.trippzo.service;
 
 import com.trippzo.model.Review;
 import com.trippzo.repository.ReviewRepository;
-import com.trippzo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +16,6 @@ public class ReviewService {
 
     @Autowired
     private ReviewRepository reviewRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Transactional
     public Review saveReview(Review review) {
