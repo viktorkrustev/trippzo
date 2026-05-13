@@ -6,6 +6,7 @@ import com.trippzo.model.dto.UserRegisterDTO;
 import com.trippzo.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,13 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping("/register")
     public String showRegisterForm(HttpServletRequest request, Model model) {
@@ -31,7 +29,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute("userDto") UserRegisterDTO userDto, BindingResult bindingResult, Model model) {
+    public String registerUser(@Valid @ModelAttribute("userDto") UserRegisterDTO userDto, BindingResult bindingResult,
+            Model model) {
         if (bindingResult.hasErrors()) {
             return "register";
         }
@@ -53,7 +52,8 @@ public class UserController {
     }
 
     @GetMapping("/login")
-    public String showLoginForm(HttpServletRequest request, Model model, @RequestParam(value = "error", required = false) String error) {
+    public String showLoginForm(HttpServletRequest request, Model model,
+            @RequestParam(value = "error", required = false) String error) {
         request.getSession(true);
         if (error != null) {
             model.addAttribute("error", "Невалидно потребителско име или парола.");

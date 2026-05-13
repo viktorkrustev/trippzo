@@ -4,10 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum NotificationStatus {
-    PENDING("Изчакващо"),
-    ACCEPTED("Прието"),
-    REJECTED("Отхвърлено"),
-    READ("Прочетено");
+    PENDING("Изчакващо"), ACCEPTED("Прието"), REJECTED("Отхвърлено"), READ("Прочетено");
 
     private final String displayName;
 
@@ -31,4 +28,3 @@ public enum NotificationStatus {
         return this == READ;
     }
 }
-

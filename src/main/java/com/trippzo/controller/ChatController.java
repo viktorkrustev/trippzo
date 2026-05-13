@@ -3,8 +3,8 @@ package com.trippzo.controller;
 import com.trippzo.model.User;
 import com.trippzo.model.dto.ChatPartnerDTO;
 import com.trippzo.service.ChatService;
+import com.trippzo.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +21,8 @@ public class ChatController extends BaseController {
 
     private final ChatService chatService;
 
-    public ChatController(ChatService chatService) {
+    public ChatController(UserService userService, ChatService chatService) {
+        super(userService);
         this.chatService = chatService;
     }
 
@@ -41,8 +42,7 @@ public class ChatController extends BaseController {
     }
 
     @GetMapping("/{username}")
-    public String showChat(@PathVariable String username, Model model,
-                           @AuthenticationPrincipal Object principal) {
+    public String showChat(@PathVariable String username, Model model, @AuthenticationPrincipal Object principal) {
         User currentUser = resolveUser(principal);
         if (currentUser == null) {
             return "redirect:/login";
@@ -62,7 +62,8 @@ public class ChatController extends BaseController {
 
     @GetMapping("/unread/count")
     @ResponseBody
-    public int getUnreadCount(@AuthenticationPrincipal UserDetails user) {
+    public int getUnreadCount(@AuthenticationPrincipal Object principal) {
+        User user = resolveUser(principal);
         if (user == null) {
             return 0;
         }

@@ -19,8 +19,8 @@ import java.util.Map;
 public class UserHandshakeInterceptor implements HandshakeInterceptor {
 
     @Override
-    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                                   WebSocketHandler wsHandler, Map<String, Object> attributes) {
+    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
+            Map<String, Object> attributes) {
 
         if (!(request instanceof ServletServerHttpRequest servletRequest)) {
             log.warn("WebSocket handshake отхвърлен: заявката не е от тип ServletServerHttpRequest");
@@ -66,8 +66,8 @@ public class UserHandshakeInterceptor implements HandshakeInterceptor {
     }
 
     @Override
-    public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                               WebSocketHandler wsHandler, Exception ex) {
+    public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
+            Exception ex) {
         if (ex != null) {
             log.error("Грешка след WebSocket handshake: {}", ex.getMessage(), ex);
         }

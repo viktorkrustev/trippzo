@@ -4,6 +4,7 @@ import com.trippzo.model.Trip;
 import com.trippzo.model.User;
 import com.trippzo.model.dto.TripCreateDTO;
 import com.trippzo.repository.TripRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,23 +16,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class TripService {
 
-    private static final DateTimeFormatter DEPARTURE_FORMATTER =
-            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+    private static final DateTimeFormatter DEPARTURE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
     private final TripRepository tripRepository;
 
-    public TripService(TripRepository tripRepository) {
-        this.tripRepository = tripRepository;
-    }
-
-    public Page<Trip> searchTrips(String origin, String destination,
-                                  String dateString, Pageable pageable) {
-        return tripRepository.findAll(
-                TripSpecifications.searchTrips(origin, destination, dateString),
-                pageable
-        );
+    public Page<Trip> searchTrips(String origin, String destination, String dateString, Pageable pageable) {
+        return tripRepository.findAll(TripSpecifications.searchTrips(origin, destination, dateString), pageable);
     }
 
     public List<Trip> getTripsAsDriver(User user) {
@@ -42,10 +35,8 @@ public class TripService {
         return tripRepository.findByPassengersUser(user);
     }
 
-
     public int getTripsByUser(User user) {
-        return tripRepository.countByDriver(user)
-                + tripRepository.countByPassengersUser(user);
+        return tripRepository.countByDriver(user) + tripRepository.countByPassengersUser(user);
     }
 
     public Optional<Trip> findById(Long tripId) {
@@ -90,7 +81,7 @@ public class TripService {
 
     @Transactional(readOnly = true)
     public boolean isUserDriver(Trip trip, User user) {
-        return user != null && trip != null && trip.getDriver() != null &&
-                trip.getDriver().getId().equals(user.getId());
+        return user != null && trip != null && trip.getDriver() != null
+                && trip.getDriver().getId().equals(user.getId());
     }
 }

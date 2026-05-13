@@ -4,6 +4,7 @@ import com.trippzo.model.Notification;
 import com.trippzo.model.User;
 import com.trippzo.service.BookingService;
 import com.trippzo.service.NotificationService;
+import com.trippzo.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,8 +23,9 @@ public class NotificationController extends BaseController {
     private final NotificationService notificationService;
     private final BookingService bookingService;
 
-    public NotificationController(NotificationService notificationService,
-                                  BookingService bookingService) {
+    public NotificationController(UserService userService, NotificationService notificationService,
+            BookingService bookingService) {
+        super(userService);
         this.notificationService = notificationService;
         this.bookingService = bookingService;
     }
@@ -41,9 +43,8 @@ public class NotificationController extends BaseController {
     }
 
     @PostMapping("/{id}/accept")
-    public String acceptNotification(@PathVariable Long id,
-                                     @AuthenticationPrincipal Object principal,
-                                     RedirectAttributes redirectAttributes) {
+    public String acceptNotification(@PathVariable Long id, @AuthenticationPrincipal Object principal,
+            RedirectAttributes redirectAttributes) {
         User user = resolveUser(principal);
         if (user == null) {
             return "redirect:/login";
@@ -72,9 +73,8 @@ public class NotificationController extends BaseController {
     }
 
     @PostMapping("/{id}/reject")
-    public String rejectNotification(@PathVariable Long id,
-                                     @AuthenticationPrincipal Object principal,
-                                     RedirectAttributes redirectAttributes) {
+    public String rejectNotification(@PathVariable Long id, @AuthenticationPrincipal Object principal,
+            RedirectAttributes redirectAttributes) {
         User user = resolveUser(principal);
         if (user == null) {
             return "redirect:/login";
@@ -98,8 +98,7 @@ public class NotificationController extends BaseController {
 
     @PostMapping("/{id}/mark-read")
     @ResponseBody
-    public ResponseEntity<String> markAsRead(@PathVariable Long id,
-                                             @AuthenticationPrincipal Object principal) {
+    public ResponseEntity<String> markAsRead(@PathVariable Long id, @AuthenticationPrincipal Object principal) {
         User user = resolveUser(principal);
         Optional<Notification> notification = notificationService.findById(id);
 
@@ -112,9 +111,8 @@ public class NotificationController extends BaseController {
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteNotification(@PathVariable Long id,
-                                     @AuthenticationPrincipal Object principal,
-                                     RedirectAttributes redirectAttributes) {
+    public String deleteNotification(@PathVariable Long id, @AuthenticationPrincipal Object principal,
+            RedirectAttributes redirectAttributes) {
         User user = resolveUser(principal);
         if (user == null) {
             return "redirect:/login";
@@ -138,7 +136,7 @@ public class NotificationController extends BaseController {
 
     @PostMapping("/delete-all")
     public String deleteAllNotifications(@AuthenticationPrincipal Object principal,
-                                         RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
         User user = resolveUser(principal);
         if (user != null) {
             notificationService.deleteAllNotifications(user.getId());

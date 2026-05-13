@@ -1,21 +1,17 @@
 package com.trippzo.controller;
 
 import com.trippzo.service.ChatService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.security.Principal;
 
 @ControllerAdvice
+@RequiredArgsConstructor
 public class GlobalControllerAdvice {
 
     private final ChatService chatService;
-
-    @Autowired
-    public GlobalControllerAdvice(ChatService chatService) {
-        this.chatService = chatService;
-    }
 
     @ModelAttribute("unreadMessages")
     public int populateUnreadMessages(Principal principal) {

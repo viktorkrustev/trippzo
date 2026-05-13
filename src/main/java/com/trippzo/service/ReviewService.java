@@ -4,7 +4,7 @@ import com.trippzo.model.Review;
 import com.trippzo.model.Trip;
 import com.trippzo.model.User;
 import com.trippzo.repository.ReviewRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,15 +17,10 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ReviewService {
 
-    @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Transactional
-    public Review saveReview(Review review) {
-        return reviewRepository.save(review);
-    }
+    private final ReviewRepository reviewRepository;
 
     @Transactional
     public void createAndSaveReview(Trip trip, User reviewer, User reviewee, int rating, String comment) {
@@ -87,10 +82,6 @@ public class ReviewService {
 
     public int getReviewCountForDriver(Long driverId) {
         return reviewRepository.countByRevieweeId(driverId);
-    }
-
-    public Optional<Review> getReviewByTripAndReviewer(Long tripId, Long reviewerId) {
-        return reviewRepository.findByTripIdAndReviewerId(tripId, reviewerId);
     }
 
     public Optional<Review> getReviewById(Long reviewId) {

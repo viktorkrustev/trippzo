@@ -4,10 +4,7 @@ import com.trippzo.model.Notification;
 import com.trippzo.model.Trip;
 import com.trippzo.model.User;
 import com.trippzo.model.dto.TripCreateDTO;
-import com.trippzo.service.ChatService;
-import com.trippzo.service.NotificationService;
-import com.trippzo.service.ReviewService;
-import com.trippzo.service.TripService;
+import com.trippzo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -32,10 +29,9 @@ public class TripController extends BaseController {
     private final ReviewService reviewService;
     private final NotificationService notificationService;
 
-    public TripController(TripService tripService,
-                          ChatService chatService,
-                          ReviewService reviewService,
-                          NotificationService notificationService) {
+    public TripController(UserService userService, TripService tripService, ChatService chatService,
+            ReviewService reviewService, NotificationService notificationService) {
+        super(userService);
         this.tripService = tripService;
         this.chatService = chatService;
         this.reviewService = reviewService;
@@ -52,9 +48,8 @@ public class TripController extends BaseController {
     }
 
     @PostMapping("/trips/create")
-    public String createTrip(@Valid @ModelAttribute("tripDto") TripCreateDTO tripDto,
-                             BindingResult bindingResult,
-                             @AuthenticationPrincipal Object principal) {
+    public String createTrip(@Valid @ModelAttribute("tripDto") TripCreateDTO tripDto, BindingResult bindingResult,
+            @AuthenticationPrincipal Object principal) {
 
         User user = resolveUser(principal);
 
@@ -73,11 +68,8 @@ public class TripController extends BaseController {
     }
 
     @GetMapping("/trips/search")
-    public String searchTrips(@RequestParam(required = false) String from,
-                              @RequestParam(required = false) String to,
-                              @RequestParam(required = false) String date,
-                              @RequestParam(defaultValue = "0") int page,
-                              Model model) {
+    public String searchTrips(@RequestParam(required = false) String from, @RequestParam(required = false) String to,
+            @RequestParam(required = false) String date, @RequestParam(defaultValue = "0") int page, Model model) {
 
         Pageable pageable = PageRequest.of(page, 10, Sort.by("departureDateTime").ascending());
         Page<Trip> tripPage = tripService.searchTrips(from, to, date, pageable);
@@ -96,8 +88,7 @@ public class TripController extends BaseController {
     }
 
     @GetMapping("/trips/{id}")
-    public String viewTrip(@PathVariable Long id, Model model,
-                           @AuthenticationPrincipal Object principal) {
+    public String viewTrip(@PathVariable Long id, Model model, @AuthenticationPrincipal Object principal) {
         Trip trip = tripService.getTripById(id);
         if (trip == null || trip.getId() == null) {
             return "redirect:/trips/search";
@@ -124,7 +115,8 @@ public class TripController extends BaseController {
             model.addAttribute("currentUsername", currentUser.getUsername());
             model.addAttribute("hasReviewed", reviewService.hasUserReviewedTrip(id, currentUser.getId()));
 
-            Optional<Notification> seatRequest = notificationService.findSeatRequestNotification(id, currentUser.getId());
+            Optional<Notification> seatRequest = notificationService.findSeatRequestNotification(id,
+                    currentUser.getId());
 
             model.addAttribute("hasSeatRequest", seatRequest.isPresent());
             model.addAttribute("seatRequestStatus", seatRequest.map(Notification::getStatus).orElse(null));
@@ -139,9 +131,8 @@ public class TripController extends BaseController {
     }
 
     @PostMapping("/trips/{id}/chat")
-    public String sendMessage(@PathVariable Long id,
-                              @RequestParam String message,
-                              @AuthenticationPrincipal Object principal) {
+    public String sendMessage(@PathVariable Long id, @RequestParam String message,
+            @AuthenticationPrincipal Object principal) {
         User sender = resolveUser(principal);
         if (sender == null) {
             return "redirect:/login";
@@ -161,9 +152,8 @@ public class TripController extends BaseController {
     }
 
     @PostMapping("/trips/{tripId}/delete")
-    public String deleteTrip(@PathVariable Long tripId,
-                             @AuthenticationPrincipal Object principal,
-                             RedirectAttributes redirectAttributes) {
+    public String deleteTrip(@PathVariable Long tripId, @AuthenticationPrincipal Object principal,
+            RedirectAttributes redirectAttributes) {
         User user = resolveUser(principal);
         if (user == null) {
             return "redirect:/login";
@@ -177,8 +167,7 @@ public class TripController extends BaseController {
 
         Trip trip = optionalTrip.get();
         if (!trip.getDriver().getId().equals(user.getId())) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Нямате права да изтриете това пътуване.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Нямате права да изтриете това пътуване.");
             return "redirect:/profile";
         }
 

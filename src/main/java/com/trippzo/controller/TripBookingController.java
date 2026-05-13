@@ -5,7 +5,7 @@ import com.trippzo.model.User;
 import com.trippzo.service.BookingService;
 import com.trippzo.service.NotificationService;
 import com.trippzo.service.TripService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.trippzo.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,14 +17,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/trips/{tripId}/booking")
 public class TripBookingController extends BaseController {
 
-    @Autowired
-    private TripService tripService;
+    private final TripService tripService;
+    private final NotificationService notificationService;
+    private final BookingService bookingService;
 
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private BookingService bookingService;
+    public TripBookingController(UserService userService, TripService tripService,
+            NotificationService notificationService, BookingService bookingService) {
+        super(userService);
+        this.tripService = tripService;
+        this.notificationService = notificationService;
+        this.bookingService = bookingService;
+    }
 
     @PostMapping("/request")
     public String requestSeat(@PathVariable("tripId") Long tripId, @AuthenticationPrincipal Object principal,
@@ -45,8 +48,7 @@ public class TripBookingController extends BaseController {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Не можете да запазвате място в собственото си пътуване.");
             } else {
-                redirectAttributes.addFlashAttribute("errorMessage", 
-                        "Вече сте изпратили заявка за това пътуване.");
+                redirectAttributes.addFlashAttribute("errorMessage", "Вече сте изпратили заявка за това пътуване.");
             }
             return "redirect:/trips/" + tripId;
         }
@@ -56,4 +58,3 @@ public class TripBookingController extends BaseController {
         return "redirect:/trips/" + tripId + "?success=true";
     }
 }
-

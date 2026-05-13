@@ -23,7 +23,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests -> {
                     authorizeRequests.requestMatchers("/static/**", "/css/**", "/js/**", "/img/**").permitAll()
                             .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                            .requestMatchers("/", "/index", "/login", "/register", "/trips/search", "/locale", "/trips/{id}")
+                            .requestMatchers("/", "/index", "/login", "/register", "/trips/search", "/locale",
+                                    "/trips/{id}")
                             .permitAll().requestMatchers("/api/**", "/ws-chat/**").permitAll()
                             .requestMatchers("/chat/unread/count", "/notifications/unread/count").authenticated()
                             .anyRequest().authenticated();

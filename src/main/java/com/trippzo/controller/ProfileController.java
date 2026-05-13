@@ -5,7 +5,7 @@ import com.trippzo.model.User;
 import com.trippzo.service.CloudinaryService;
 import com.trippzo.service.ReviewService;
 import com.trippzo.service.TripService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.trippzo.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,14 +22,17 @@ import java.util.List;
 @RequestMapping("/profile")
 public class ProfileController extends BaseController {
 
-    @Autowired
-    private TripService tripService;
+    private final TripService tripService;
+    private final ReviewService reviewService;
+    private final CloudinaryService cloudinaryService;
 
-    @Autowired
-    private ReviewService reviewService;
-
-    @Autowired
-    private CloudinaryService cloudinaryService;
+    public ProfileController(UserService userService, TripService tripService, ReviewService reviewService,
+            CloudinaryService cloudinaryService) {
+        super(userService);
+        this.tripService = tripService;
+        this.reviewService = reviewService;
+        this.cloudinaryService = cloudinaryService;
+    }
 
     @GetMapping
     public String profilePage(@AuthenticationPrincipal Object principal, Model model) {

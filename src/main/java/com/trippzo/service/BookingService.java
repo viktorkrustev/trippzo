@@ -5,20 +5,18 @@ import com.trippzo.model.Trip;
 import com.trippzo.model.TripPassenger;
 import com.trippzo.model.User;
 import com.trippzo.repository.TripPassengerRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class BookingService {
 
-    @Autowired
-    private TripPassengerRepository tripPassengerRepository;
-
-    @Autowired
-    private NotificationService notificationService;
+    private final TripPassengerRepository tripPassengerRepository;
+    private final NotificationService notificationService;
 
     public boolean isUserAlreadyPassenger(Long tripId, Long userId) {
         return tripPassengerRepository.findByTripIdAndUserId(tripId, userId).isPresent();
@@ -40,11 +38,11 @@ public class BookingService {
         }
 
         if (trip.getDriver().getId().equals(passenger.getId())) {
-            return false; // Driver cannot request seat in their own trip
+            return false;
         }
 
         if (notificationService.hasExistingSeatRequest(trip.getId(), passenger.getId())) {
-            return false; // Passenger already has a pending request
+            return false;
         }
 
         return true;
@@ -57,7 +55,6 @@ public class BookingService {
         tripPassenger.setUser(user);
         tripPassengerRepository.save(tripPassenger);
     }
-
 
     @Transactional
     public boolean acceptSeatRequest(Long notificationId) {
@@ -92,6 +89,3 @@ public class BookingService {
         notificationService.rejectSeatRequest(notificationId);
     }
 }
-
-
-

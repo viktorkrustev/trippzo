@@ -5,7 +5,7 @@ import com.trippzo.model.Trip;
 import com.trippzo.model.User;
 import com.trippzo.model.dto.ChatPartnerDTO;
 import com.trippzo.repository.MessageRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,16 +14,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ChatService {
 
-    @Autowired
-    private MessageRepository messageRepository;
+    private final MessageRepository messageRepository;
 
-    @Autowired
-    private TripService tripService;
+    private final TripService tripService;
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     public List<Message> getMessagesForTrip(Long tripId) {
         return messageRepository.findByTripIdOrderByTimestampAsc(tripId);

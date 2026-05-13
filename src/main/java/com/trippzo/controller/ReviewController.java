@@ -5,7 +5,7 @@ import com.trippzo.model.Trip;
 import com.trippzo.model.User;
 import com.trippzo.service.ReviewService;
 import com.trippzo.service.TripService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.trippzo.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,15 +15,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Optional;
+
 @Controller
 @RequestMapping("/reviews")
 public class ReviewController extends BaseController {
 
-    @Autowired
-    private ReviewService reviewService;
+    private final ReviewService reviewService;
+    private final TripService tripService;
 
-    @Autowired
-    private TripService tripService;
+    public ReviewController(UserService userService, ReviewService reviewService, TripService tripService) {
+        super(userService);
+        this.reviewService = reviewService;
+        this.tripService = tripService;
+    }
 
     @PostMapping("/{tripId}/add")
     public String addReview(@PathVariable Long tripId, @RequestParam int rating,
