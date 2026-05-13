@@ -3,6 +3,7 @@ package com.trippzo.controller;
 import com.trippzo.model.Message;
 import com.trippzo.model.User;
 import com.trippzo.model.dto.ChatMessage;
+import com.trippzo.model.dto.MessageDTO;
 import com.trippzo.service.ChatService;
 import com.trippzo.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +31,11 @@ public class ChatWebSocketController {
                 chatMessage.getContent(), chatMessage.getReceiverUsername());
 
         if (savedMsg != null) {
-            messagingTemplate.convertAndSendToUser(chatMessage.getReceiverUsername(), "/queue/messages", savedMsg);
+            MessageDTO dto = chatService.toDTO(savedMsg);
 
-            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/messages", savedMsg);
+            messagingTemplate.convertAndSendToUser(chatMessage.getReceiverUsername(), "/queue/messages", dto);
+
+            messagingTemplate.convertAndSendToUser(principal.getName(), "/queue/messages", dto);
         }
     }
 }

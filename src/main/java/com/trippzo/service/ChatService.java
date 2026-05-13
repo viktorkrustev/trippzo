@@ -4,6 +4,7 @@ import com.trippzo.model.Message;
 import com.trippzo.model.Trip;
 import com.trippzo.model.User;
 import com.trippzo.model.dto.ChatPartnerDTO;
+import com.trippzo.model.dto.MessageDTO;
 import com.trippzo.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,20 +12,17 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ChatService {
 
     private final MessageRepository messageRepository;
-
     private final TripService tripService;
-
     private final UserService userService;
 
-    public List<Message> getMessagesForTrip(Long tripId) {
-        return messageRepository.findByTripIdOrderByTimestampAsc(tripId);
+    public List<MessageDTO> getMessagesForTrip(Long tripId) {
+        return messageRepository.findByTripIdOrderByTimestampAsc(tripId).stream().map(this::toDTO).toList();
     }
 
     public Message saveMessage(Long tripId, String senderIdentifier, String content, String receiverUsername) {
@@ -33,18 +31,14 @@ public class ChatService {
             trip = tripService.getTripById(tripId);
         }
 
-        User sender = userService.findByUsername(senderIdentifier);
+        User sender = resolveUser(senderIdentifier);
+        User receiver = resolveUser(receiverUsername);
+
         if (sender == null) {
-            sender = userService.findByEmail(senderIdentifier);
+            throw new IllegalArgumentException("Sender not found: " + senderIdentifier);
         }
-
-        User receiver = userService.findByUsername(receiverUsername);
         if (receiver == null) {
-            receiver = userService.findByEmail(receiverUsername);
-        }
-
-        if (sender == null || receiver == null) {
-            return null;
+            throw new IllegalArgumentException("Receiver not found: " + receiverUsername);
         }
 
         Message msg = new Message();
@@ -58,15 +52,20 @@ public class ChatService {
         return messageRepository.save(msg);
     }
 
-    public Set<User> findChatPartners(String username) {
+    public Set<User> findChatPartners(String identifier) {
+        User user = resolveUser(identifier);
+        if (user == null)
+            return Collections.emptySet();
+
+        String username = user.getUsername();
         Set<User> partners = new HashSet<>();
         partners.addAll(messageRepository.findReceiversBySender(username));
         partners.addAll(messageRepository.findSendersByReceiver(username));
         return partners;
     }
 
-    public List<Message> getChatBetween(String userA, String userB) {
-        return messageRepository.findChatBetweenUsers(userA, userB);
+    public List<MessageDTO> getChatBetween(String userA, String userB) {
+        return messageRepository.findChatBetweenUsers(userA, userB).stream().map(this::toDTO).toList();
     }
 
     public int countUnreadMessages(String currentUsername, String partnerUsername) {
@@ -78,35 +77,46 @@ public class ChatService {
     }
 
     public void markMessagesAsRead(String senderUsername, String receiverUsername) {
-        List<Message> unreadMessages = messageRepository
-                .findBySenderUsernameAndReceiverUsernameAndReadFalse(senderUsername, receiverUsername);
-
-        for (Message msg : unreadMessages) {
-            msg.setRead(true);
-        }
-
-        messageRepository.saveAll(unreadMessages);
+        List<Message> unread = messageRepository.findBySenderUsernameAndReceiverUsernameAndReadFalse(senderUsername,
+                receiverUsername);
+        unread.forEach(msg -> msg.setRead(true));
+        messageRepository.saveAll(unread);
     }
 
     public List<ChatPartnerDTO> getSortedChatPartners(String currentUsername, Locale locale) {
         Set<User> partners = findChatPartners(currentUsername);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, HH:mm", locale);
 
         return partners.stream().map(partner -> {
             int unreadCount = countUnreadMessages(currentUsername, partner.getUsername());
             ChatPartnerDTO dto = new ChatPartnerDTO(partner, unreadCount);
 
-            List<Message> chat = getChatBetween(currentUsername, partner.getUsername());
+            List<Message> chat = messageRepository.findChatBetweenUsers(currentUsername, partner.getUsername());
             if (!chat.isEmpty()) {
-                Message last = chat.get(chat.size() - 1);
+                Message last = chat.getLast();
                 dto.setLastMessage(last.getMessageText());
                 dto.setRawTimestamp(last.getTimestamp());
-
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM, HH:mm", locale);
                 dto.setLastMessageTime(last.getTimestamp().format(formatter));
             }
+
             return dto;
         }).filter(dto -> dto.getRawTimestamp() != null)
-                .sorted(Comparator.comparing(ChatPartnerDTO::getRawTimestamp).reversed()).collect(Collectors.toList());
+                .sorted(Comparator.comparing(ChatPartnerDTO::getRawTimestamp).reversed()).toList();
     }
 
+    private User resolveUser(String identifier) {
+        if (identifier == null)
+            return null;
+        User user = userService.findByUsername(identifier);
+        if (user == null) {
+            user = userService.findByEmail(identifier);
+        }
+        return user;
+    }
+
+    public MessageDTO toDTO(Message msg) {
+        User sender = msg.getSender();
+        return new MessageDTO(msg.getId(), sender.getUsername(), sender.getFullName(), sender.getAvatarUrl(),
+                msg.getMessageText(), msg.getTimestamp(), msg.isRead());
+    }
 }

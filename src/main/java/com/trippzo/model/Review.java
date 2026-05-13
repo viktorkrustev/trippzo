@@ -16,7 +16,7 @@ public class Review {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "trip_id", nullable = true)
+    @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
 
     @ManyToOne

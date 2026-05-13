@@ -26,6 +26,7 @@ public class TripCreateDTO {
     @Pattern(regexp = "\\d{2}:\\d{2}", message = "Форматът трябва да е чч:мм")
     private String departureTime;
 
+    @NotNull(message = "Моля, въведете брой места")
     @Min(value = 1, message = "Трябва да има поне 1 място")
     private Integer seatsTotal;
 

@@ -33,11 +33,9 @@ public class ChatController extends BaseController {
             return "redirect:/login";
         }
 
-        String currentUsername = currentUser.getUsername();
-        List<ChatPartnerDTO> partnerDtos = chatService.getSortedChatPartners(currentUsername, locale);
-
+        List<ChatPartnerDTO> partnerDtos = chatService.getSortedChatPartners(currentUser.getUsername(), locale);
         model.addAttribute("chatPartners", partnerDtos);
-        model.addAttribute("currentUsername", currentUsername);
+        model.addAttribute("currentUsername", currentUser.getUsername());
         return "chat-inbox";
     }
 
@@ -49,13 +47,18 @@ public class ChatController extends BaseController {
         }
 
         String currentUsername = currentUser.getUsername();
-
         chatService.markMessagesAsRead(username, currentUsername);
 
         User chatPartner = userService.findByUsername(username);
+        if (chatPartner == null) {
+            return "redirect:/chat";
+        }
 
         model.addAttribute("messages", chatService.getChatBetween(currentUsername, username));
-        model.addAttribute("chatPartner", chatPartner);
+        model.addAttribute("chatPartnerUsername", chatPartner.getUsername());
+        model.addAttribute("chatPartnerName",
+                chatPartner.getFullName() != null ? chatPartner.getFullName() : chatPartner.getUsername());
+        model.addAttribute("chatPartnerAvatar", chatPartner.getAvatarUrl());
         model.addAttribute("currentUsername", currentUsername);
         return "chat-window";
     }

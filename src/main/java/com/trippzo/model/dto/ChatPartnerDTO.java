@@ -11,24 +11,25 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 public class ChatPartnerDTO {
-    private User user;
+
+    private Long userId;
+    private String username;
+    private String fullName;
+    private String avatarUrl;
     private int unreadMessagesCount;
     private String lastMessageTime;
     private String lastMessage;
-    private String avatarUrl;
     private LocalDateTime rawTimestamp;
 
     public ChatPartnerDTO(User user, int unreadMessagesCount) {
-        this.user = user;
-        this.unreadMessagesCount = unreadMessagesCount;
+        this.userId = user.getId();
+        this.username = user.getUsername();
+        this.fullName = user.getFullName();
         this.avatarUrl = user.getAvatarUrl();
-    }
-
-    public String getUsername() {
-        return user.getUsername();
+        this.unreadMessagesCount = unreadMessagesCount;
     }
 
     public String getDisplayName() {
-        return (user.getFullName() != null && !user.getFullName().isEmpty()) ? user.getFullName() : user.getUsername();
+        return (fullName != null && !fullName.isEmpty()) ? fullName : username;
     }
 }
