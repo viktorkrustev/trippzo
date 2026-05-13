@@ -78,4 +78,19 @@ public class TripService {
 
         tripRepository.save(trip);
     }
+
+    @Transactional(readOnly = true)
+    public int getAvailableSeats(Trip trip) {
+        if (trip == null || trip.getPassengers() == null) {
+            return 0;
+        }
+        int passengersCount = trip.getPassengers().size();
+        return Math.max(0, trip.getSeatsTotal() - passengersCount);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isUserDriver(Trip trip, User user) {
+        return user != null && trip != null && trip.getDriver() != null &&
+                trip.getDriver().getId().equals(user.getId());
+    }
 }

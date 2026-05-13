@@ -21,7 +21,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -83,13 +82,7 @@ public class TripController extends BaseController {
         Pageable pageable = PageRequest.of(page, 10, Sort.by("departureDateTime").ascending());
         Page<Trip> tripPage = tripService.searchTrips(from, to, date, pageable);
 
-        Map<Long, Double> driverRatings = new HashMap<>();
-        for (Trip trip : tripPage.getContent()) {
-            Long driverId = trip.getDriver().getId();
-            if (!driverRatings.containsKey(driverId)) {
-                driverRatings.put(driverId, reviewService.getAverageRatingForDriver(driverId));
-            }
-        }
+        Map<Long, Double> driverRatings = reviewService.getDriverRatingsForTrips(tripPage.getContent());
 
         model.addAttribute("trips", tripPage.getContent());
         model.addAttribute("driverRatings", driverRatings);
@@ -112,12 +105,8 @@ public class TripController extends BaseController {
 
         User currentUser = resolveUser(principal);
 
-        boolean isDriver = currentUser != null &&
-                trip.getDriver() != null &&
-                trip.getDriver().getId().equals(currentUser.getId());
-
-        int passengersCount = (trip.getPassengers() != null) ? trip.getPassengers().size() : 0;
-        int seatsAvailable = Math.max(0, trip.getSeatsTotal() - passengersCount);
+        boolean isDriver = tripService.isUserDriver(trip, currentUser);
+        int seatsAvailable = tripService.getAvailableSeats(trip);
 
         double driverRating = reviewService.getAverageRatingForDriver(trip.getDriver().getId());
         int reviewCount = reviewService.getReviewCountForDriver(trip.getDriver().getId());
@@ -143,7 +132,7 @@ public class TripController extends BaseController {
             model.addAttribute("currentUsername", null);
             model.addAttribute("hasReviewed", false);
             model.addAttribute("hasSeatRequest", false);
-            model.addAttribute("seatRequestStatus", null); // Важно за избягване на грешки в HTML
+            model.addAttribute("seatRequestStatus", null);
         }
 
         return "trip-details";

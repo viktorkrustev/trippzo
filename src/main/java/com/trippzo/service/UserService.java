@@ -116,4 +116,11 @@ public class UserService implements UserDetailsService {
             return userRepository.save(newUser);
         });
     }
+
+    @Transactional
+    public void updateProfile(User user, String fullName, String email) {
+        user.setFullName(fullName);
+        user.setEmail(email);
+        saveUser(user);
+    }
 }

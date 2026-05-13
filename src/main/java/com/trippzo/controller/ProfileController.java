@@ -58,9 +58,7 @@ public class ProfileController extends BaseController {
             @RequestParam String email) {
         User user = resolveUser(principal);
         if (user != null) {
-            user.setFullName(fullName);
-            user.setEmail(email);
-            userService.saveUser(user);
+            userService.updateProfile(user, fullName, email);
         }
         return "redirect:/profile";
     }

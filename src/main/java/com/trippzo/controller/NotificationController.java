@@ -61,7 +61,8 @@ public class NotificationController extends BaseController {
             return "redirect:/notifications";
         }
 
-        if (bookingService.acceptSeatRequest(id)) {
+        boolean accepted = bookingService.acceptSeatRequest(id);
+        if (accepted) {
             redirectAttributes.addFlashAttribute("successMessage", "Мястото е потвърдено успешно!");
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Няма свободни места за това пътуване!");

@@ -2,6 +2,7 @@ package com.trippzo.controller;
 
 import com.trippzo.model.Trip;
 import com.trippzo.model.User;
+import com.trippzo.service.BookingService;
 import com.trippzo.service.NotificationService;
 import com.trippzo.service.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Optional;
-
 @Controller
 @RequestMapping("/trips/{tripId}/booking")
 public class TripBookingController extends BaseController {
@@ -23,6 +22,9 @@ public class TripBookingController extends BaseController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private BookingService bookingService;
 
     @PostMapping("/request")
     public String requestSeat(@PathVariable("tripId") Long tripId, @AuthenticationPrincipal Object principal,
@@ -38,16 +40,14 @@ public class TripBookingController extends BaseController {
             return "redirect:/trips/search";
         }
 
-        if (trip.getDriver().getId().equals(passenger.getId())) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Не можете да запазвате място в собственото си пътуване.");
-            return "redirect:/trips/" + tripId;
-        }
-
-        Optional<com.trippzo.model.Notification> existingRequest = notificationService.findSeatRequestNotification(tripId,
-                passenger.getId());
-        if (existingRequest.isPresent()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Вече сте изпратили заявка за това пътуване.");
+        if (!bookingService.canRequestSeat(trip, passenger)) {
+            if (trip.getDriver().getId().equals(passenger.getId())) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Не можете да запазвате място в собственото си пътуване.");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", 
+                        "Вече сте изпратили заявка за това пътуване.");
+            }
             return "redirect:/trips/" + tripId;
         }
 

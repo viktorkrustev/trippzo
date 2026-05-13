@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
-
 @Controller
 @RequestMapping("/reviews")
 public class ReviewController extends BaseController {
@@ -45,26 +43,15 @@ public class ReviewController extends BaseController {
 
         Trip trip = tripOptional.get();
 
-        if (reviewService.hasUserReviewedTrip(tripId, currentUser.getId())) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Вече сте оценили това пътуване.");
-            return "redirect:/trips/" + tripId;
+        try {
+            reviewService.createAndSaveReview(trip, currentUser, trip.getDriver(), rating, comment);
+            redirectAttributes.addFlashAttribute("successMessage", "Вашата оценка беше записана успешно.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
-        if (rating < 1 || rating > 5) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Оценката трябва да е между 1 и 5.");
-            return "redirect:/trips/" + tripId;
-        }
-
-        Review review = new Review();
-        review.setTrip(trip);
-        review.setReviewer(currentUser);
-        review.setReviewee(trip.getDriver());
-        review.setRating(rating);
-        review.setComment(comment);
-        review.setCreatedAt(LocalDateTime.now());
-
-        reviewService.saveReview(review);
-        redirectAttributes.addFlashAttribute("successMessage", "Вашата оценка беше записана успешно.");
         return "redirect:/trips/" + tripId;
     }
 

@@ -95,6 +95,11 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
+    public boolean hasExistingSeatRequest(Long tripId, Long userId) {
+        return findSeatRequestNotification(tripId, userId).isPresent();
+    }
+
+    @Transactional(readOnly = true)
     public int countUnread(Long userId) {
         return notificationRepository.countByRecipientIdAndStatusNot(
                 userId, NotificationStatus.READ);
