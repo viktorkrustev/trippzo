@@ -50,9 +50,7 @@ public class ReviewController extends BaseController {
         try {
             reviewService.createAndSaveReview(trip, currentUser, trip.getDriver(), rating, comment);
             redirectAttributes.addFlashAttribute("successMessage", "Вашата оценка беше записана успешно.");
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        } catch (IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 

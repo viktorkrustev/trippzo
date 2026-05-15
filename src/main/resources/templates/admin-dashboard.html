@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Trippzo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen">
+
+<div th:replace="fragments/navbar"></div>
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <div class="mb-12">
+        <h1 class="text-4xl font-extrabold text-white mb-2" th:text="#{admin.dashboard.title}">Admin Dashboard</h1>
+        <p class="text-zinc-400" th:text="#{admin.dashboard.subtitle}">Manage your platform and users</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="bg-white/5 border border-white/10 rounded-xl p-8 backdrop-blur-sm hover:bg-white/[0.07] transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-zinc-400 text-sm font-semibold uppercase tracking-wide mb-1" th:text="#{admin.stats.users}">Total Users</p>
+                    <p class="text-4xl font-bold text-white" th:text="${stats.totalUsers}">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white/5 border border-white/10 rounded-xl p-8 backdrop-blur-sm hover:bg-white/[0.07] transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-zinc-400 text-sm font-semibold uppercase tracking-wide mb-1" th:text="#{admin.stats.trips}">Total Trips</p>
+                    <p class="text-4xl font-bold text-white" th:text="${stats.totalTrips}">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white/5 border border-white/10 rounded-xl p-8 backdrop-blur-sm hover:bg-white/[0.07] transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-zinc-400 text-sm font-semibold uppercase tracking-wide mb-1" th:text="#{admin.stats.reviews}">Total Reviews</p>
+                    <p class="text-4xl font-bold text-white" th:text="${stats.totalReviews}">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white/5 border border-white/10 rounded-xl p-8 backdrop-blur-sm hover:border-white/20 transition">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-white" th:text="#{admin.manage.users.title}">User Management</h2>
+            </div>
+            <p class="text-zinc-400 text-sm mb-4" th:text="#{admin.manage.users.desc}">View and manage all users in the system</p>
+            <a href="/admin/users" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition" th:text="#{admin.manage.users.btn}">
+                View Users
+            </a>
+        </div>
+
+        <div class="bg-white/5 border border-white/10 rounded-xl p-8 backdrop-blur-sm hover:border-white/20 transition">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-white" th:text="#{admin.manage.trips.title}">Trip Management</h2>
+            </div>
+            <p class="text-zinc-400 text-sm mb-4" th:text="#{admin.manage.trips.desc}">View and manage all trips in the system</p>
+            <a href="/admin/trips" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2 rounded-lg transition" th:text="#{admin.manage.trips.btn}">
+                View Trips
+            </a>
+        </div>
+    </div>
+
+</main> </body>
+</html>
+

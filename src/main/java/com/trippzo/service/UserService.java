@@ -5,6 +5,7 @@ import com.trippzo.exception.PasswordMismatchException;
 import com.trippzo.exception.UserAlreadyExistsException;
 import com.trippzo.model.User;
 import com.trippzo.model.dto.UserRegisterDTO;
+import com.trippzo.model.enums.Role;
 import com.trippzo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,9 +28,19 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email.trim().toLowerCase())
-                .orElseThrow(() -> new UsernameNotFoundException("Потребител с този имейл не е намерен"));
+    public UserDetails loadUserByUsername(String emailOrUsername) throws UsernameNotFoundException {
+        String normalizedInput = emailOrUsername.trim().toLowerCase();
+
+        User user = userRepository.findByEmail(normalizedInput).orElse(null);
+
+        if (user == null) {
+            user = userRepository.findByUsername(normalizedInput).orElse(null);
+        }
+
+        if (user == null) {
+            throw new UsernameNotFoundException("Потребител с този имейл или потребителско име не е намерен");
+        }
+
         return new CustomUserDetails(user);
     }
 
@@ -51,6 +63,7 @@ public class UserService implements UserDetailsService {
         user.setUsername(dto.getUsername().toLowerCase().trim());
         user.setEmail(dto.getEmail().toLowerCase().trim());
         user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(Role.ROLE_USER);
 
         userRepository.save(user);
     }
@@ -101,6 +114,7 @@ public class UserService implements UserDetailsService {
             newUser.setAvatarUrl(avatarUrl);
             newUser.setUsername(email.split("@")[0] + "_" + UUID.randomUUID().toString().substring(0, 4));
             newUser.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+            newUser.setRole(Role.ROLE_USER);
             return userRepository.save(newUser);
         });
     }
@@ -110,5 +124,36 @@ public class UserService implements UserDetailsService {
         user.setFullName(fullName);
         user.setEmail(email);
         saveUser(user);
+    }
+
+    @Transactional
+    public void promoteToAdmin(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRole(Role.ROLE_ADMIN);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void demoteToUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRole(Role.ROLE_USER);
+        userRepository.save(user);
+    }
+
+    public long getUserCount() {
+        return userRepository.count();
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    public List<User> getUsersByRole(Role role) {
+        return userRepository.findByRole(role);
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
     }
 }

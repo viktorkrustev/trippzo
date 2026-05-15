@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Management - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+
+<div th:replace="fragments/navbar"></div>
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2" th:text="#{admin.trips.title}">Trip Management</h1>
+            <p class="text-zinc-400" th:text="#{admin.trips.subtitle}">Manage all trips in the system</p>
+        </div>
+        <a href="/admin/dashboard" class="text-sm text-zinc-400 hover:text-white transition flex items-center gap-2">
+            <span th:text="#{admin.back.dashboard}">← Back to Dashboard</span>
+        </a>
+    </div>
+
+    <div class="bg-white/5 border border-white/10 rounded-xl overflow-hidden backdrop-blur-sm">
+
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                <tr class="border-b border-white/10 bg-white/[0.02]">
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider" th:text="#{admin.trips.col.trip}">Trip</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider" th:text="#{admin.trips.col.driver}">Driver</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider" th:text="#{admin.trips.col.date}">Date</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider" th:text="#{admin.trips.col.passengers}">Passengers</th>
+                    <th class="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wider" th:text="#{admin.trips.col.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                <tr th:each="trip : ${trips}" class="hover:bg-white/[0.02] transition">
+                    <td class="px-6 py-4">
+                        <p class="text-white font-medium" th:text="${trip.destination}">Destination</p>
+                        <p class="text-zinc-500 text-xs mt-1" th:text="${trip.origin} + ' → ' + ${trip.destination}">Route</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <img th:if="${trip.driver.avatarUrl}" th:src="${trip.driver.avatarUrl}" class="w-8 h-8 rounded-full object-cover">
+                            <div th:if="${trip.driver.avatarUrl == null}" class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] text-white font-bold"
+                                 th:text="${trip.driver.fullName != null ? trip.driver.fullName.substring(0,1).toUpperCase() : 'U'}">U</div>
+                            <span class="text-zinc-300 text-sm" th:text="${trip.driver.fullName}">Driver</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-zinc-400" th:text="${#temporals.format(trip.departureDateTime, 'dd MMM, HH:mm')}">Date</td>
+                    <td class="px-6 py-4">
+                        <span class="text-sm text-zinc-300" th:text="${trip.passengers.size()} + ' / ' + ${trip.seatsTotal}">0 / 4</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <form th:action="@{/admin/trips/{id}/delete(id=${trip.id})}" method="post" class="inline">
+                            <button type="submit" class="text-red-400 hover:text-red-300 text-xs font-bold uppercase tracking-widest transition"
+                                    th:text="#{admin.trips.btn.delete}" th:data-confirm-msg="#{admin.trips.delete.confirm}"
+                                    onclick="return confirm(this.getAttribute('data-confirm-msg'));">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="md:hidden divide-y divide-white/10">
+            <div th:each="trip : ${trips}" class="p-5 hover:bg-white/[0.02]">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-white font-bold text-lg" th:text="${trip.destination}">Destination</h3>
+                        <p class="text-zinc-500 text-sm" th:text="${trip.origin} + ' → ' + ${trip.destination}">Route</p>
+                    </div>
+                    <form th:action="@{/admin/trips/{id}/delete(id=${trip.id})}" method="post">
+                        <button type="submit" class="p-2 bg-red-500/10 text-red-500 rounded-lg"
+                                th:data-confirm-msg="#{admin.trips.delete.confirm}"
+                                onclick="return confirm(this.getAttribute('data-confirm-msg'));">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="flex flex-col">
+                        <span class="text-zinc-500 text-[10px] uppercase font-bold tracking-wider" th:text="#{admin.trips.col.driver}">Driver</span>
+                        <span class="text-zinc-300 mt-1" th:text="${trip.driver.fullName}">Driver Name</span>
+                    </div>
+                    <div class="flex flex-col text-right">
+                        <span class="text-zinc-500 text-[10px] uppercase font-bold tracking-wider" th:text="#{admin.trips.col.date}">Date</span>
+                        <span class="text-zinc-300 mt-1" th:text="${#temporals.format(trip.departureDateTime, 'dd MMM, HH:mm')}">Date</span>
+                    </div>
+                    <div class="flex flex-col col-span-2 bg-white/5 rounded-lg p-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-zinc-400" th:text="#{admin.trips.col.passengers}">Passengers</span>
+                            <span class="text-white font-bold" th:text="${trip.passengers.size()} + ' / ' + ${trip.seatsTotal}">0 / 4</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${trips.isEmpty()}" class="p-12 text-center">
+            <p class="text-zinc-500" th:text="#{admin.trips.empty}">No trips found</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

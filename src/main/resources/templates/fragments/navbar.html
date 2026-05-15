@@ -35,6 +35,11 @@
                     class="absolute -top-1 -right-3 min-w-[18px] h-[18px] bg-red-600 text-white text-[10px] rounded-full flex items-center justify-center font-bold px-1 hidden shadow-lg border border-black/10 leading-none">
               </span>
             </a>
+
+            <a href="/admin/dashboard"
+               sec:authorize="hasRole('ROLE_ADMIN')"
+               class="text-zinc-400 hover:text-purple-400 transition"
+               th:text="#{nav.admin}">Admin</a>
           </div>
         </div>
 
@@ -160,6 +165,21 @@
           </div>
           <span id="notificationMobileBadge" class="px-2 py-0.5 bg-red-600 text-white text-[10px] rounded-full font-bold hidden">0</span>
         </a>
+
+        <div sec:authorize="hasRole('ROLE_ADMIN')">
+          <div class="h-px bg-white/5 my-6"></div>
+          <span class="block text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] mb-4"
+                th:text="#{admin.menu.heading}">Admin</span>
+
+          <a href="/admin/dashboard" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/[0.03] transition-all group">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <span class="text-sm font-semibold text-zinc-300" th:text="#{admin.menu.panel}">Admin Panel</span>
+          </a>
+        </div>
       </div>
     </div>
 

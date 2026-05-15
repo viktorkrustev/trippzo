@@ -26,6 +26,7 @@ public class SecurityConfig {
                             .requestMatchers("/", "/index", "/login", "/register", "/trips/search", "/locale",
                                     "/trips/{id}")
                             .permitAll().requestMatchers("/api/**", "/ws-chat/**").permitAll()
+                            .requestMatchers("/admin/**").hasRole("ADMIN")
                             .requestMatchers("/chat/unread/count", "/notifications/unread/count").authenticated()
                             .anyRequest().authenticated();
                 }).formLogin(formLogin -> {

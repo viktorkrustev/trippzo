@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+
+<div th:replace="fragments/navbar"></div>
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2" th:text="#{admin.users.title}">User Management</h1>
+            <p class="text-zinc-400" th:text="#{admin.users.subtitle}">Manage system users and their roles</p>
+        </div>
+        <a href="/admin/dashboard" class="text-sm text-zinc-400 hover:text-white transition flex items-center gap-2">
+            <span th:text="#{admin.back.dashboard}">← Back to Dashboard</span>
+        </a>
+    </div>
+
+    <div class="bg-white/5 border border-white/10 rounded-xl overflow-hidden backdrop-blur-sm">
+
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                <tr class="border-b border-white/10 bg-white/[0.02]">
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider" th:text="#{admin.users.col.user}">User</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider" th:text="#{admin.users.col.email}">Email</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider" th:text="#{admin.users.col.role}">Role</th>
+                    <th class="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider" th:text="#{admin.users.col.joined}">Joined</th>
+                    <th class="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wider" th:text="#{admin.users.col.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                <tr th:each="user : ${users}" class="hover:bg-white/[0.02] transition">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm overflow-hidden border border-white/10">
+                                <img th:if="${user.avatarUrl}" th:src="${user.avatarUrl}" class="w-full h-full object-cover">
+                                <span th:if="${user.avatarUrl == null}" th:text="${user.fullName != null ? user.fullName.substring(0,1).toUpperCase() : 'U'}">U</span>
+                            </div>
+                            <div>
+                                <p class="text-white font-semibold" th:text="${user.fullName}">Full Name</p>
+                                <p class="text-zinc-500 text-xs" th:text="'@' + ${user.username}">@username</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-zinc-300" th:text="${user.email}">Email</td>
+                    <td class="px-6 py-4">
+                        <span th:if="${user.role.name() == 'ROLE_ADMIN'}" class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20" th:text="#{admin.users.role.admin}">Admin</span>
+                        <span th:if="${user.role.name() == 'ROLE_USER'}" class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20" th:text="#{admin.users.role.user}">User</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-zinc-500" th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy')}">Joined</td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex justify-end gap-3">
+                            <form th:if="${user.role.name() == 'ROLE_USER'}" th:action="@{/admin/users/{id}/role/promote(id=${user.id})}" method="post">
+                                <button type="submit" class="text-green-400 hover:text-green-300 text-xs font-bold uppercase tracking-wider" th:text="#{admin.users.btn.promote}">Promote</button>
+                            </form>
+                            <form th:if="${user.role.name() == 'ROLE_ADMIN'}" th:action="@{/admin/users/{id}/role/demote(id=${user.id})}" method="post">
+                                <button type="submit" class="text-yellow-400 hover:text-yellow-300 text-xs font-bold uppercase tracking-wider" th:text="#{admin.users.btn.demote}">Demote</button>
+                            </form>
+                            <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post">
+                                <button type="submit" class="text-red-400 hover:text-red-300 text-xs font-bold uppercase tracking-wider"
+                                        th:text="#{admin.users.btn.delete}" th:data-confirm-msg="#{admin.users.delete.confirm}"
+                                        onclick="return confirm(this.getAttribute('data-confirm-msg'));">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="md:hidden divide-y divide-white/10">
+            <div th:each="user : ${users}" class="p-5">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white font-bold border border-white/10 shrink-0 overflow-hidden">
+                        <img th:if="${user.avatarUrl}" th:src="${user.avatarUrl}" class="w-full h-full object-cover">
+                        <span th:if="${user.avatarUrl == null}" th:text="${user.fullName != null ? user.fullName.substring(0,1).toUpperCase() : 'U'}">U</span>
+                    </div>
+                    <div class="overflow-hidden">
+                        <h3 class="text-white font-bold truncate" th:text="${user.fullName}">Full Name</h3>
+                        <p class="text-zinc-500 text-sm truncate" th:text="${user.email}">email@example.com</p>
+                    </div>
+                    <div class="ml-auto">
+                        <span th:if="${user.role.name() == 'ROLE_ADMIN'}" class="w-3 h-3 rounded-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)] block"></span>
+                        <span th:if="${user.role.name() == 'ROLE_USER'}" class="w-3 h-3 rounded-full bg-blue-500 block"></span>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <form th:if="${user.role.name() == 'ROLE_USER'}" th:action="@{/admin/users/{id}/role/promote(id=${user.id})}" method="post" class="flex-1">
+                        <button type="submit" class="w-full py-2 bg-green-500/10 text-green-400 rounded-lg text-xs font-bold uppercase tracking-widest border border-green-500/20" th:text="#{admin.users.btn.promote}">Promote</button>
+                    </form>
+                    <form th:if="${user.role.name() == 'ROLE_ADMIN'}" th:action="@{/admin/users/{id}/role/demote(id=${user.id})}" method="post" class="flex-1">
+                        <button type="submit" class="w-full py-2 bg-yellow-500/10 text-yellow-400 rounded-lg text-xs font-bold uppercase tracking-widest border border-yellow-500/20" th:text="#{admin.users.btn.demote}">Demote</button>
+                    </form>
+
+                    <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" class="flex-1">
+                        <button type="submit" class="w-full py-2 bg-red-500/10 text-red-400 rounded-lg text-xs font-bold uppercase tracking-widest border border-red-500/20"
+                                th:text="#{admin.users.btn.delete}" th:data-confirm-msg="#{admin.users.delete.confirm}"
+                                onclick="return confirm(this.getAttribute('data-confirm-msg'));">Delete</button>
+                    </form>
+                </div>
+
+                <div class="mt-4 flex justify-between items-center text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">
+                    <span th:text="'ID: #' + ${user.id}">ID</span>
+                    <span th:text="#{admin.users.col.joined} + ': ' + ${#temporals.format(user.createdAt, 'dd.MM.yyyy')}">Joined</span>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${users.isEmpty()}" class="p-12 text-center">
+            <p class="text-zinc-500" th:text="#{admin.users.empty}">No users found</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
