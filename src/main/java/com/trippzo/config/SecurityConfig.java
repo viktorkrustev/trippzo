@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,26 +16,21 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/ws/**"))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(authorizeRequests -> {
-                    authorizeRequests.requestMatchers("/static/**", "/css/**", "/js/**", "/img/**").permitAll()
-                            .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                            .requestMatchers("/", "/index", "/login", "/register", "/trips/search", "/locale",
-                                    "/trips/{id}")
-                            .permitAll().requestMatchers("/api/**", "/ws-chat/**").permitAll()
-                            .requestMatchers("/admin/**").hasRole("ADMIN")
-                            .requestMatchers("/chat/unread/count", "/notifications/unread/count").authenticated()
-                            .anyRequest().authenticated();
-                }).formLogin(formLogin -> {
-                    formLogin.loginPage("/login").usernameParameter("email").passwordParameter("password")
-                            .defaultSuccessUrl("/", true).failureUrl("/login?error=true").permitAll();
-                }).oauth2Login(oauth2 -> oauth2.loginPage("/login").defaultSuccessUrl("/oauth2/success", true))
-                .logout(logout -> {
-                    logout.logoutUrl("/logout").logoutSuccessUrl("/").invalidateHttpSession(true)
-                            .clearAuthentication(true).deleteCookies("JSESSIONID").permitAll();
-                }).build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/ws-chat/**"))
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/static/**", "/css/**", "/js/**", "/img/**")
+                        .permitAll().requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers("/", "/index", "/login", "/register", "/trips/search", "/trips/{id}",
+                                "/locale", "/forgot-password", "/reset-password")
+                        .permitAll().requestMatchers("/api/**", "/ws-chat/**").permitAll().requestMatchers("/admin/**")
+                        .hasRole("ADMIN").requestMatchers("/chat/unread/count", "/notifications/unread/count")
+                        .authenticated().anyRequest().authenticated())
+                .formLogin(form -> form.loginPage("/login").usernameParameter("email").passwordParameter("password")
+                        .defaultSuccessUrl("/", true).failureUrl("/login?error=true").permitAll())
+                .oauth2Login(oauth2 -> oauth2.loginPage("/login").defaultSuccessUrl("/oauth2/success", true))
+                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/").invalidateHttpSession(true)
+                        .clearAuthentication(true).deleteCookies("JSESSIONID").permitAll())
+                .build();
     }
 
     @Bean

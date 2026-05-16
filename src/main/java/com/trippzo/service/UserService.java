@@ -7,6 +7,7 @@ import com.trippzo.model.User;
 import com.trippzo.model.dto.UserRegisterDTO;
 import com.trippzo.model.enums.Role;
 import com.trippzo.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,7 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.util.List;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.HexFormat;
 import java.util.UUID;
 
 @Service
@@ -29,28 +32,20 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String emailOrUsername) throws UsernameNotFoundException {
-        String normalizedInput = emailOrUsername.trim().toLowerCase();
+        String normalized = emailOrUsername.trim().toLowerCase();
 
-        User user = userRepository.findByEmail(normalizedInput).orElse(null);
-
-        if (user == null) {
-            user = userRepository.findByUsername(normalizedInput).orElse(null);
-        }
-
-        if (user == null) {
-            throw new UsernameNotFoundException("Потребител с този имейл или потребителско име не е намерен");
-        }
+        User user = userRepository.findByEmail(normalized).or(() -> userRepository.findByUsername(normalized))
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "Потребител с този имейл или потребителско име не е намерен"));
 
         return new CustomUserDetails(user);
     }
 
     @Transactional
     public void registerUser(UserRegisterDTO dto) {
-
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
             throw new PasswordMismatchException();
         }
-
         if (userRepository.existsByUsername(dto.getUsername().toLowerCase().trim())) {
             throw new UserAlreadyExistsException("username", "Потребителското име вече е заето!");
         }
@@ -64,7 +59,6 @@ public class UserService implements UserDetailsService {
         user.setEmail(dto.getEmail().toLowerCase().trim());
         user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         user.setRole(Role.ROLE_USER);
-
         userRepository.save(user);
     }
 
@@ -87,11 +81,8 @@ public class UserService implements UserDetailsService {
 
         String name = principal.getName();
 
-        User user = userRepository.findByUsername(name).orElse(null);
-        if (user != null)
-            return user;
+        User user = userRepository.findByUsername(name).or(() -> userRepository.findByEmail(name)).orElse(null);
 
-        user = userRepository.findByEmail(name).orElse(null);
         if (user != null)
             return user;
 
@@ -128,14 +119,16 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void promoteToAdmin(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
         user.setRole(Role.ROLE_ADMIN);
         userRepository.save(user);
     }
 
     @Transactional
     public void demoteToUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
         user.setRole(Role.ROLE_USER);
         userRepository.save(user);
     }
@@ -144,16 +137,45 @@ public class UserService implements UserDetailsService {
         return userRepository.count();
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAllByOrderByCreatedAtDesc();
-    }
-
-    public List<User> getUsersByRole(Role role) {
-        return userRepository.findByRole(role);
-    }
-
     @Transactional
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
+    }
+
+    @Transactional
+    public String initiatePasswordReset(String email) {
+        User user = findByEmail(email);
+        if (user == null) {
+            throw new EntityNotFoundException("Потребител с този имейл не е намерен");
+        }
+
+        String token = generateResetToken();
+        user.setPasswordResetToken(token);
+        user.setPasswordResetTokenExpiry(LocalDateTime.now().plusHours(24));
+        userRepository.save(user);
+        return token;
+    }
+
+    public User getUserByResetToken(String token) {
+        return userRepository.findByPasswordResetToken(token).orElse(null);
+    }
+
+    public boolean isResetTokenValid(User user) {
+        return user != null && user.getPasswordResetToken() != null && user.getPasswordResetTokenExpiry() != null
+                && LocalDateTime.now().isBefore(user.getPasswordResetTokenExpiry());
+    }
+
+    @Transactional
+    public void resetPassword(User user, String newPassword) {
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetTokenExpiry(null);
+        userRepository.save(user);
+    }
+
+    private String generateResetToken() {
+        byte[] bytes = new byte[32];
+        new SecureRandom().nextBytes(bytes);
+        return HexFormat.of().formatHex(bytes);
     }
 }

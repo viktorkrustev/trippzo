@@ -60,7 +60,7 @@
                                class="h-4 w-4 text-white border-gray-600 rounded bg-gray-900 focus:ring-0" />
                         <span class="ml-2" th:text="#{login.remember_me}">Запомни ме</span>
                     </label>
-                    <a href="#" class="text-white hover:underline transition-colors" th:text="#{login.forgot_password}">
+                    <a th:href="@{/forgot-password}" class="text-white hover:underline transition-colors" th:text="#{login.forgot_password}">
                         Забравена парола?
                     </a>
                 </div>

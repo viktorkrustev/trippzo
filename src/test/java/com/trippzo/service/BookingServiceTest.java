@@ -8,16 +8,21 @@ import com.trippzo.model.enums.NotificationStatus;
 import com.trippzo.repository.TripPassengerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class BookingServiceTest {
 
     @Mock
@@ -30,14 +35,13 @@ class BookingServiceTest {
     private BookingService bookingService;
 
     private Trip trip;
+    private User driver;
     private User passenger;
     private Notification notification;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-
-        User driver = new User();
+        driver = new User();
         driver.setId(1L);
         driver.setUsername("driver");
 
@@ -51,6 +55,8 @@ class BookingServiceTest {
         trip.setOrigin("Sofia");
         trip.setDestination("Plovdiv");
         trip.setDriver(driver);
+        trip.setPricePerSeat(BigDecimal.valueOf(15.00));
+        trip.setDepartureDateTime(LocalDateTime.now().plusDays(1));
 
         notification = new Notification();
         notification.setId(1L);
@@ -73,7 +79,7 @@ class BookingServiceTest {
 
         boolean result = bookingService.acceptSeatRequest(notificationId);
 
-        assertTrue(result, "acceptSeatRequest трябва да върне true");
+        assertTrue(result);
         verify(tripPassengerRepository).save(any(TripPassenger.class));
         verify(notificationService).acceptSeatRequest(notificationId);
     }
@@ -84,7 +90,7 @@ class BookingServiceTest {
             .thenReturn(2);
         boolean result = bookingService.hasAvailableSeats(trip);
 
-        assertTrue(result, "Трябва да има свободни места");
+        assertTrue(result);
     }
 
     @Test
@@ -94,7 +100,7 @@ class BookingServiceTest {
 
         int availableSeats = bookingService.getAvailableSeats(trip);
 
-        assertEquals(2, availableSeats, "Трябва 2 свободни места (4 - 2)");
+        assertEquals(2, availableSeats);
     }
 
     @Test
@@ -109,7 +115,7 @@ class BookingServiceTest {
 
         boolean result = bookingService.isUserAlreadyPassenger(trip.getId(), passenger.getId());
 
-        assertTrue(result, "Потребителят трябва да е пътник");
+        assertTrue(result);
     }
 
     @Test
@@ -119,7 +125,7 @@ class BookingServiceTest {
 
         boolean result = bookingService.isUserAlreadyPassenger(trip.getId(), passenger.getId());
 
-        assertFalse(result, "Потребителят не трябва да е пътник");
+        assertFalse(result);
     }
 
     @Test
@@ -134,7 +140,7 @@ class BookingServiceTest {
         when(tripPassengerRepository.countByTripId(trip.getId())).thenReturn(4);
         boolean result = bookingService.acceptSeatRequest(notificationId);
 
-        assertFalse(result, "acceptSeatRequest трябва да върне false");
+        assertFalse(result);
         verify(tripPassengerRepository, never()).save(any(TripPassenger.class));
         verify(notificationService).rejectSeatRequest(notificationId);
     }
@@ -153,7 +159,7 @@ class BookingServiceTest {
 
         boolean result = bookingService.acceptSeatRequest(notificationId);
 
-        assertFalse(result, "acceptSeatRequest трябва да върне false");
+        assertFalse(result);
         verify(tripPassengerRepository, never()).save(any(TripPassenger.class));
         verify(notificationService).deleteNotification(notificationId);
     }
@@ -166,7 +172,7 @@ class BookingServiceTest {
 
         boolean result = bookingService.acceptSeatRequest(notificationId);
 
-        assertFalse(result, "acceptSeatRequest трябва да върне false");
+        assertFalse(result);
         verify(tripPassengerRepository, never()).save(any(TripPassenger.class));
     }
 
@@ -177,7 +183,7 @@ class BookingServiceTest {
 
         boolean result = bookingService.hasAvailableSeats(trip);
 
-        assertFalse(result, "Не трябва да има свободни места");
+        assertFalse(result);
     }
 
     @Test
@@ -187,7 +193,7 @@ class BookingServiceTest {
 
         int availableSeats = bookingService.getAvailableSeats(trip);
 
-        assertEquals(4, availableSeats, "Всички 4 места трябва да са свободни");
+        assertEquals(4, availableSeats);
     }
 
     @Test
@@ -197,5 +203,41 @@ class BookingServiceTest {
         bookingService.rejectSeatRequest(notificationId);
 
         verify(notificationService).rejectSeatRequest(notificationId);
+    }
+
+    @Test
+    void testCanRequestSeat_Success() {
+        when(notificationService.hasExistingSeatRequest(1L, 2L)).thenReturn(false);
+
+        boolean result = bookingService.canRequestSeat(trip, passenger);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void testCanRequestSeat_DriverCannotRequest() {
+        boolean result = bookingService.canRequestSeat(trip, driver);
+
+        assertFalse(result);
+        verify(notificationService, never()).hasExistingSeatRequest(anyLong(), anyLong());
+    }
+
+    @Test
+    void testCanRequestSeat_ExistingRequest() {
+        when(notificationService.hasExistingSeatRequest(1L, 2L)).thenReturn(true);
+
+        boolean result = bookingService.canRequestSeat(trip, passenger);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void testCanRequestSeat_NullTrip() {
+        assertThrows(IllegalArgumentException.class, () -> bookingService.canRequestSeat(null, passenger));
+    }
+
+    @Test
+    void testCanRequestSeat_NullPassenger() {
+        assertThrows(IllegalArgumentException.class, () -> bookingService.canRequestSeat(trip, null));
     }
 }

@@ -38,4 +38,7 @@ public class User {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    private String passwordResetToken;
+    private LocalDateTime passwordResetTokenExpiry;
 }

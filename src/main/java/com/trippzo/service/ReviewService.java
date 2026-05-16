@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,14 +58,14 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public Map<Long, Double> getDriverRatingsForTrips(List<Trip> trips) {
-        Map<Long, Double> driverRatings = new HashMap<>();
-        for (Trip trip : trips) {
-            Long driverId = trip.getDriver().getId();
-            if (!driverRatings.containsKey(driverId)) {
-                driverRatings.put(driverId, getAverageRatingForDriver(driverId));
-            }
-        }
-        return driverRatings;
+        List<Long> driverIds = trips.stream().map(t -> t.getDriver().getId()).distinct().toList();
+
+        if (driverIds.isEmpty())
+            return Map.of();
+
+        return reviewRepository.findAverageRatingsByDriverIds(driverIds).stream()
+                .collect(Collectors.toMap(row -> (Long) row[0],
+                        row -> BigDecimal.valueOf((Double) row[1]).setScale(1, RoundingMode.HALF_UP).doubleValue()));
     }
 
     public double getAverageRatingForDriver(Long driverId) {

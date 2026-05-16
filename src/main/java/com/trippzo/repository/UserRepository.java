@@ -1,7 +1,6 @@
 package com.trippzo.repository;
 
 import com.trippzo.model.User;
-import com.trippzo.model.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -16,7 +15,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByUsername(String username);
 
-    List<User> findByRole(Role role);
-
     List<User> findAllByOrderByCreatedAtDesc();
+
+    Optional<User> findByPasswordResetToken(String token);
 }
