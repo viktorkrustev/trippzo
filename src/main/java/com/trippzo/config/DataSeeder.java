@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -99,7 +98,7 @@ public class DataSeeder implements CommandLineRunner {
         Set<String> usedEmails = new HashSet<>();
         Set<String> usedUsernames = new HashSet<>();
 
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 20; i++) {
             User user = new User();
             user.setFullName(generateBulgarianName());
             user.setUsername(generateUniqueUsername(usedUsernames));
@@ -118,13 +117,13 @@ public class DataSeeder implements CommandLineRunner {
         List<Trip> trips = new ArrayList<>();
         LocalDateTime baseDateTime = LocalDateTime.now().plus(1, ChronoUnit.DAYS);
 
-        for (int i = 0; i < 120; i++) {
+        for (int i = 0; i < 20; i++) {
             Trip trip = new Trip();
             trip.setOrigin(getRandomElement(BULGARIAN_CITIES));
             trip.setDestination(getRandomElement(BULGARIAN_CITIES, trip.getOrigin()));
             trip.setDepartureDateTime(baseDateTime.plus(random.nextInt(1, 90), ChronoUnit.DAYS)
                     .plus(random.nextInt(0, 24), ChronoUnit.HOURS).plus(random.nextInt(0, 60), ChronoUnit.MINUTES));
-            trip.setSeatsTotal(random.nextInt(2, 6)); // 2-5 seats
+            trip.setSeatsTotal(random.nextInt(2, 6));
             trip.setPricePerSeat(new BigDecimal(random.nextInt(5, 30)));
             trip.setCar(getRandomElement(CAR_MODELS));
             trip.setDescription(getRandomElement(TRIP_DESCRIPTIONS));
@@ -187,7 +186,7 @@ public class DataSeeder implements CommandLineRunner {
                     review.setReviewee(passenger.getUser());
                     review.setRating(random.nextInt(1, 6));
                     review.setComment(getRandomReviewComment());
-                    review.setCreatedAt(LocalDateTime.now().minus(random.nextInt(1, 15), ChronoUnit.DAYS));
+                    review.setCreatedAt(LocalDateTime.now().minusDays(random.nextInt(1, 15)));
 
                     reviewRepository.save(review);
                 }
@@ -198,7 +197,7 @@ public class DataSeeder implements CommandLineRunner {
     private void seedNotifications(List<Trip> trips, List<User> users) {
         for (Trip trip : trips) {
             List<TripPassenger> passengers = tripPassengerRepository.findAll().stream()
-                    .filter(tp -> tp.getTrip().getId().equals(trip.getId())).collect(Collectors.toList());
+                    .filter(tp -> tp.getTrip().getId().equals(trip.getId())).toList();
 
             if (!passengers.isEmpty()) {
                 for (TripPassenger passenger : passengers) {
@@ -222,7 +221,7 @@ public class DataSeeder implements CommandLineRunner {
     private void seedChatMessages(List<Trip> trips, List<User> users) {
         for (Trip trip : trips) {
             List<TripPassenger> passengers = tripPassengerRepository.findAll().stream()
-                    .filter(tp -> tp.getTrip().getId().equals(trip.getId())).collect(Collectors.toList());
+                    .filter(tp -> tp.getTrip().getId().equals(trip.getId())).toList();
 
             if (!passengers.isEmpty()) {
                 for (TripPassenger passenger : passengers) {
@@ -296,7 +295,6 @@ public class DataSeeder implements CommandLineRunner {
         return getRandomElement(messages);
     }
 
-    @SuppressWarnings("unchecked")
     private <T> T getRandomElement(T[] array) {
         return array[random.nextInt(array.length)];
     }
