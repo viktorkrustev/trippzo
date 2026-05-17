@@ -20,7 +20,7 @@ public class SecurityConfig {
         return http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/ws-chat/**"))
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/static/**", "/css/**", "/js/**", "/img/**")
                         .permitAll().requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("/", "/index", "/login", "/register", "/trips/search", "/trips/{id}",
+                        .requestMatchers("/", "/index", "/login", "/register", "/trips/search", "/trips/{id:[0-9]+}",
                                 "/locale", "/forgot-password", "/reset-password")
                         .permitAll().requestMatchers("/api/**", "/ws-chat/**").permitAll().requestMatchers("/admin/**")
                         .hasRole("ADMIN").requestMatchers("/chat/unread/count", "/notifications/unread/count")
