@@ -17,7 +17,7 @@ public class AdminDataInitializer implements CommandLineRunner {
 
     private static final String ADMIN_EMAIL = "viktorkrustev03@abv.bg";
     private static final String ADMIN_PASSWORD = "123456";
-    private static final String ADMIN_NAME = "Administrator";
+    private static final String ADMIN_NAME = "Виктор Кръстев";
 
     @Override
     public void run(String... args) throws Exception {
