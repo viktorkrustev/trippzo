@@ -98,7 +98,7 @@ public class DataSeeder implements CommandLineRunner {
         Set<String> usedEmails = new HashSet<>();
         Set<String> usedUsernames = new HashSet<>();
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 5; i++) {
             User user = new User();
             user.setFullName(generateBulgarianName());
             user.setUsername(generateUniqueUsername(usedUsernames));
@@ -117,7 +117,7 @@ public class DataSeeder implements CommandLineRunner {
         List<Trip> trips = new ArrayList<>();
         LocalDateTime baseDateTime = LocalDateTime.now().plus(1, ChronoUnit.DAYS);
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 5; i++) {
             Trip trip = new Trip();
             trip.setOrigin(getRandomElement(BULGARIAN_CITIES));
             trip.setDestination(getRandomElement(BULGARIAN_CITIES, trip.getOrigin()));
