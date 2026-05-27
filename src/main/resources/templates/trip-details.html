@@ -20,6 +20,7 @@
     .soft { box-shadow: 0 20px 60px rgba(0,0,0,0.55); }
     .btn { transition: all 0.2s ease; }
     .btn:active { transform: scale(0.98); }
+    .rotate-180 { transform: rotate(180deg); }
   </style>
 </head>
 
@@ -145,9 +146,40 @@
       </div>
 
       <div class="glass rounded-3xl p-6 md:p-8 soft">
+        <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleDriverReviews()">
+          <div class="flex items-center gap-3">
+            <h2 class="text-xl font-bold" th:text="#{trip.review}"></h2>
+            <span id="driverReviewsArrow" class="text-xs transition-transform duration-300">▼</span>
+          </div>
+          <p class="text-yellow-400 text-sm" th:text="'⭐ ' + ${#numbers.formatDecimal(driverRating,1,1)}"></p>
+        </div>
+
+        <!-- Driver's Reviews List -->
+        <div id="driverReviewsList" class="hidden space-y-3">
+          <div th:if="${!driverReviews.isEmpty()}" class="space-y-3">
+            <div th:each="review : ${driverReviews}" class="glass rounded-xl p-4">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <p class="font-semibold" th:text="${review.reviewer.fullName}"></p>
+                  <p class="text-yellow-400 text-sm" th:text="'⭐ ' + ${review.rating}"></p>
+                </div>
+                <p class="text-white/40 text-xs" th:text="${#temporals.format(review.createdAt, 'dd.MM.yyyy HH:mm')}"></p>
+              </div>
+              <p class="text-white/80 text-sm" th:if="${review.comment != null and review.comment != ''}" th:text="${review.comment}"></p>
+              <p class="text-white/40 text-sm italic" th:if="${review.comment == null or review.comment == ''}">Без коментар</p>
+            </div>
+          </div>
+
+          <div th:if="${driverReviews.isEmpty()}" class="text-center text-white/40 italic py-6">
+            <p th:text="#{trip.comment}"></p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="glass rounded-3xl p-6 md:p-8 soft">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold" th:text="'⭐ ' + #{trip.review}"></h2>
-          <p class="text-yellow-400 text-sm" th:text="'⭐ ' + ${#numbers.formatDecimal(driverRating,1,1)}"></p>
         </div>
 
         <div sec:authorize="isAuthenticated()">
@@ -203,6 +235,11 @@
       paint(val);
     });
   });
+
+  function toggleDriverReviews(){
+    document.getElementById("driverReviewsList").classList.toggle("hidden");
+    document.getElementById("driverReviewsArrow").classList.toggle("rotate-180");
+  }
 </script>
 
 </body>

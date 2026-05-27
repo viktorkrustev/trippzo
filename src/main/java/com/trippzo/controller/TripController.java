@@ -108,6 +108,7 @@ public class TripController extends BaseController {
         model.addAttribute("driverRating", driverRating);
         model.addAttribute("reviewCount", reviewCount);
         model.addAttribute("driverLevel", trip.getDriver().getDriverLevel());
+        model.addAttribute("driverReviews", reviewService.getReviewsForDriver(trip.getDriver().getId()));
         model.addAttribute("messages", chatService.getMessagesForTrip(id));
         model.addAttribute("reviews", reviewService.getReviewsForTrip(id));
 
