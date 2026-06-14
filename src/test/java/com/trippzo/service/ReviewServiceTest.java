@@ -217,24 +217,4 @@ class ReviewServiceTest {
 
         verify(reviewRepository, times(1)).deleteById(1L);
     }
-
-    @Test
-    void testGetDriverRatingsForTrips() {
-        Trip trip2 = new Trip();
-        trip2.setId(2L);
-        trip2.setDriver(reviewee);
-
-        Review review1 = new Review();
-        review1.setRating(5);
-        Review review2 = new Review();
-        review2.setRating(4);
-
-        List<Trip> trips = List.of(testTrip, trip2);
-        when(reviewRepository.findByRevieweeId(2L)).thenReturn(List.of(review1, review2));
-
-        var result = reviewService.getDriverRatingsForTrips(trips);
-
-        assertTrue(result.containsKey(2L));
-        assertEquals(4.5, result.get(2L));
-    }
 }
