@@ -19,6 +19,13 @@
     .soft { box-shadow: 0 25px 70px rgba(0,0,0,0.65); }
     input, textarea, select { transition: all .2s ease; }
     input:focus, textarea:focus, select:focus { border-color: rgba(255,255,255,0.3); outline: none; }
+    input[type="time"] { color: transparent; font-size: 0; }
+    input[type="time"]:valid { color: white; font-size: 1rem; }
+    input[type="time"]::-webkit-datetime-edit { color: transparent; font-size: 0; }
+    input[type="time"]:valid::-webkit-datetime-edit { color: white; font-size: 1rem; }
+    input[type="time"]::-webkit-calendar-picker-indicator { display: none; }
+    input[type="time"]::-webkit-datetime-edit-fields-wrapper { background: transparent; }
+    input[type="time"]::-webkit-datetime-edit-ampm-field { display: none; }
     .flatpickr-calendar { z-index: 9999 !important; background: #12121a !important; border: 1px solid rgba(255,255,255,0.1) !important; box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important; }
     .flatpickr-day { color: #e5e7eb !important; }
     .flatpickr-day:hover { background: rgba(255,255,255,0.1) !important; }
@@ -78,9 +85,11 @@
              class="text-red-400 text-xs mt-1"></p>
         </div>
 
-        <div>
-          <input type="time" th:field="*{departureTime}"
-                 class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10"/>
+        <div class="relative">
+          <input type="text" id="departureTime" th:field="*{departureTime}" placeholder="HH:MM"
+                 pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+                 class="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10 peer placeholder-transparent text-white"/>
+          <label for="departureTime" id="timeLabelInner" class="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-white/50 peer-focus:top-2 peer-focus:-translate-y-0 peer-focus:text-xs peer-focus:text-white/40 transition-all pointer-events-none" th:text="#{trip.create.placeholder.time}">Час</label>
           <p th:if="${#fields.hasErrors('departureTime')}" th:errors="*{departureTime}"
              class="text-red-400 text-xs mt-1"></p>
         </div>
@@ -150,6 +159,24 @@
         disableMobile: true,
         locale: lang === 'bg' ? 'bg' : 'en'
       });
+    }
+
+    const timeInput = document.getElementById("departureTime");
+    const timeLabel = document.getElementById("timeLabelInner");
+
+    function updateLabelVisibility() {
+      if (timeInput.value) {
+        timeLabel.classList.add("hidden");
+      } else {
+        timeLabel.classList.remove("hidden");
+      }
+    }
+
+    if (timeInput) {
+      timeInput.addEventListener("input", updateLabelVisibility);
+      timeInput.addEventListener("change", updateLabelVisibility);
+      // Check initial state
+      updateLabelVisibility();
     }
   });
 </script>

@@ -55,11 +55,6 @@
                            class="w-full px-4 py-3 sm:py-4 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white transition" />
                 </div>
                 <div class="flex items-center justify-between text-sm sm:text-base">
-                    <label class="flex items-center text-gray-300 cursor-pointer">
-                        <input id="remember-me" name="remember-me" type="checkbox"
-                               class="h-4 w-4 text-white border-gray-600 rounded bg-gray-900 focus:ring-0" />
-                        <span class="ml-2" th:text="#{login.remember_me}">Запомни ме</span>
-                    </label>
                     <a th:href="@{/forgot-password}" class="text-white hover:underline transition-colors" th:text="#{login.forgot_password}">
                         Забравена парола?
                     </a>
